@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Pencil, Trash2, Undo2, Redo2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ActionTooltip } from '@/components/ui/action-tooltip'
 import { FloatingInput, FloatingSelect, FloatingNumberInput } from '@/components/ui/floating-field'
 import {
   Table,
@@ -15,6 +16,8 @@ import {
 import { usePosStore } from '@/state/pos-store'
 import { formatCurrency, parseMoney } from '@/lib/money'
 import type { FinanceType, PaymentEntry } from '@/types/pos'
+import { kb } from '@/lib/keyboard-hints'
+import { useFormShortcuts } from '@/hooks/use-form-shortcuts'
 
 const financeGroups: FinanceType[] = [
   'Nueva',
@@ -160,6 +163,13 @@ export function PaymentsPanel() {
     reset()
   }
 
+  useFormShortcuts({
+    onSave,
+    onReset: reset,
+    onDelete: editingId ? () => onDelete(editingId) : undefined,
+    hasEditingId: Boolean(editingId),
+  })
+
   return (
     <div className="grid h-full grid-cols-1 lg:grid-cols-[1fr_340px]">
       {/* TABLE */}
@@ -167,29 +177,35 @@ export function PaymentsPanel() {
         <div className="flex items-center justify-between border-b p-3">
           <h2 className="text-sm font-semibold">Payments Panel</h2>
           <div className="flex gap-2">
-            <Button
-              size="icon-sm"
-              variant="outline"
-              onClick={() => undo('payments')}
-              disabled={!canUndo('payments')}
-            >
-              <Undo2 className="size-4" />
-            </Button>
-            <Button
-              size="icon-sm"
-              variant="outline"
-              onClick={() => redo('payments')}
-              disabled={!canRedo('payments')}
-            >
-              <Redo2 className="size-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearAll}
-            >
-              Clear All
-            </Button>
+            <ActionTooltip label="Undo" shortcut={kb.undo()}>
+              <Button
+                type="button"
+                size="icon-sm"
+                variant="outline"
+                aria-label="Undo"
+                onClick={() => undo('payments')}
+                disabled={!canUndo('payments')}
+              >
+                <Undo2 className="size-4" />
+              </Button>
+            </ActionTooltip>
+            <ActionTooltip label="Redo" shortcut={kb.redo()}>
+              <Button
+                type="button"
+                size="icon-sm"
+                variant="outline"
+                aria-label="Redo"
+                onClick={() => redo('payments')}
+                disabled={!canRedo('payments')}
+              >
+                <Redo2 className="size-4" />
+              </Button>
+            </ActionTooltip>
+            <ActionTooltip label="Clear all payment rows">
+              <Button type="button" variant="outline" size="sm" onClick={clearAll}>
+                Clear All
+              </Button>
+            </ActionTooltip>
           </div>
         </div>
 
@@ -352,7 +368,7 @@ export function PaymentsPanel() {
           </div>
 
           {/* Row 3: Account Name */}
-          <FloatingInput label="Account Name" value={draft.accountName}
+          <FloatingInput label="Account Name" id="primary-input" value={draft.accountName}
             onChange={(e) => setDraft(p => ({ ...p, accountName: e.target.value }))} />
 
           {/* Row 4: Qty, Item */}
@@ -410,19 +426,26 @@ export function PaymentsPanel() {
             onChange={(e) => setDraft(p => ({ ...p, notes: e.target.value }))} />
 
           <div className="grid grid-cols-3 gap-2 pt-2">
-            <Button onClick={onSave}>
-              {editingId ? 'Update' : 'Save'}
-            </Button>
-            <Button variant="outline" onClick={reset}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={!editingId}
-              onClick={() => editingId && onDelete(editingId)}
-            >
-              Delete
-            </Button>
+            <ActionTooltip label={editingId ? 'Update row' : 'Save row'} shortcut={`${kb.save()} · ${kb.saveAlso()}`}>
+              <Button type="button" onClick={onSave}>
+                {editingId ? 'Update' : 'Save'}
+              </Button>
+            </ActionTooltip>
+            <ActionTooltip label="Cancel editing" shortcut={kb.cancel()}>
+              <Button type="button" variant="outline" onClick={reset}>
+                Cancel
+              </Button>
+            </ActionTooltip>
+            <ActionTooltip label="Delete current row" shortcut={kb.deleteRow()}>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={!editingId}
+                onClick={() => editingId && onDelete(editingId)}
+              >
+                Delete
+              </Button>
+            </ActionTooltip>
           </div>
         </div>
       </section>

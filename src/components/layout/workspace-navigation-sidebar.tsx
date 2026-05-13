@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { ActionTooltip } from "@/components/ui/action-tooltip"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
@@ -24,9 +25,11 @@ import {
   SECTION_ORDER,
   SECTION_TABS,
   sectionForTab,
+  workspaceTabHotkeyDigit,
 } from "@/lib/nav-sections"
 import { usePosStore } from "@/state/pos-store"
 import type { NavSection, PosTab } from "@/types/pos"
+import { kb } from "@/lib/keyboard-hints"
 
 const sectionIcons: Record<NavSection, typeof Package> = {
   inventory: Package,
@@ -120,24 +123,30 @@ export function WorkspaceNavigationSidebar({
                       {tabs.map((item) => {
                         const TabIcon = tabIcons[item.id]
                         const isActive = activeTab === item.id
+                        const digit = workspaceTabHotkeyDigit(item.id)
                         return (
-                          <Button
+                          <ActionTooltip
                             key={item.id}
-                            type="button"
-                            variant="ghost"
-                            className={cn(
-                              "mb-0.5 h-8 w-full justify-start gap-2 rounded-md px-2 text-sm font-normal text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                              isActive &&
-                                "bg-muted font-medium text-foreground shadow-none hover:bg-muted dark:bg-sidebar-accent dark:text-sidebar-accent-foreground",
-                            )}
-                            onClick={() => {
-                              setActiveTab(item.id)
-                              onTabSelect?.()
-                            }}
+                            label={item.label}
+                            shortcut={digit !== undefined ? kb.workspaceTab(digit) : undefined}
                           >
-                            <TabIcon className="size-3.5 shrink-0 opacity-70" />
-                            <span className="truncate">{item.label}</span>
-                          </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              className={cn(
+                                "mb-0.5 h-8 w-full justify-start gap-2 rounded-md px-2 text-sm font-normal text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                isActive &&
+                                  "bg-muted font-medium text-foreground shadow-none hover:bg-muted dark:bg-sidebar-accent dark:text-sidebar-accent-foreground",
+                              )}
+                              onClick={() => {
+                                setActiveTab(item.id)
+                                onTabSelect?.()
+                              }}
+                            >
+                              <TabIcon className="size-3.5 shrink-0 opacity-70" />
+                              <span className="truncate">{item.label}</span>
+                            </Button>
+                          </ActionTooltip>
                         )
                       })}
                     </div>

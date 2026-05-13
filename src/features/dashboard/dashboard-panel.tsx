@@ -161,6 +161,7 @@ export function DashboardPanel() {
   return (
     <ScrollArea className="h-[calc(100vh-3.5rem)]">
       <div className="p-4 md:p-5 space-y-4 md:space-y-5 max-w-[1400px] mx-auto pb-10">
+        <div id="primary-input" tabIndex={-1} className="sr-only" aria-hidden />
 
         {/* ── Cash Variance Banner ─────────────────────────────────── */}
         {!isBalanced && (

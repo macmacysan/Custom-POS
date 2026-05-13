@@ -2,14 +2,17 @@ import * as React from 'react'
 import { Pencil, Trash2, GripVertical, Undo2, Redo2} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ActionTooltip } from '@/components/ui/action-tooltip'
 import { FloatingInput, FloatingSelect, FloatingNumberInput } from '@/components/ui/floating-field'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useFormShortcuts } from '@/hooks/use-form-shortcuts'
 import { expenseCategories } from '@/state/seed'
 import { usePosStore } from '@/state/pos-store'
 import type { ExpenseEntry, ExpenseType, VatType } from '@/types/pos'
 import { formatCurrency, parseMoney } from '@/lib/money'
 import { summarizeExpenses } from '@/features/sidebar/calculations'
+import { kb } from '@/lib/keyboard-hints'
 
 const groups: ExpenseType[] = ['Company Expenses', 'Purchases', 'Drawings']
 
@@ -157,6 +160,13 @@ export function ExpensesPanel() {
     reset()
   }
 
+  useFormShortcuts({
+    onSave,
+    onReset: reset,
+    onDelete: editingId ? () => onDelete(editingId) : undefined,
+    hasEditingId: Boolean(editingId),
+  })
+
   function onDrop(targetType: ExpenseType, id: string) {
     pushHistory('expenses')
     setExpenses((prev) => prev.map((row) => (row.id === id ? { ...row, type: targetType } : row)))
@@ -168,9 +178,37 @@ export function ExpensesPanel() {
         <div className="flex items-center justify-between border-b p-3">
           <h2 className="text-sm font-semibold">Expenses, Purchases & Drawings</h2>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon-sm" onClick={() => undo('expenses')} disabled={!canUndo('expenses')}><Undo2 className="size-4" /></Button>
-            <Button variant="outline" size="icon-sm" onClick={() => redo('expenses')} disabled={!canRedo('expenses')}><Redo2 className="size-4" /></Button>
-            {expenses.length > 0 && <Button variant="outline" size="sm" onClick={clearAll} >Clear All</Button>}
+            <ActionTooltip label="Undo" shortcut={kb.undo()}>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                aria-label="Undo"
+                onClick={() => undo('expenses')}
+                disabled={!canUndo('expenses')}
+              >
+                <Undo2 className="size-4" />
+              </Button>
+            </ActionTooltip>
+            <ActionTooltip label="Redo" shortcut={kb.redo()}>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                aria-label="Redo"
+                onClick={() => redo('expenses')}
+                disabled={!canRedo('expenses')}
+              >
+                <Redo2 className="size-4" />
+              </Button>
+            </ActionTooltip>
+            {expenses.length > 0 && (
+              <ActionTooltip label="Clear all rows from this tab">
+                <Button type="button" variant="outline" size="sm" onClick={clearAll}>
+                  Clear All
+                </Button>
+              </ActionTooltip>
+            )}
           </div>
         </div>
 
@@ -269,7 +307,12 @@ export function ExpensesPanel() {
           />
 
           {/* Row 2: Description */}
-          <FloatingInput label="Description" value={draft.description} onChange={(e) => setDraft((prev) => ({ ...prev, description: e.target.value }))} />
+          <FloatingInput
+            id="primary-input"
+            label="Description"
+            value={draft.description}
+            onChange={(e) => setDraft((prev) => ({ ...prev, description: e.target.value }))}
+          />
 
           {/* Row 3: Receipt No. and VAT */}
           <div className="grid grid-cols-[1fr_90px] gap-2">
@@ -295,9 +338,26 @@ export function ExpensesPanel() {
           <FloatingNumberInput label="Amount" inputMode="decimal" value={draft.amount} onChange={(e) => setDraft((prev) => ({ ...prev, amount: e.target.value }))} />
 
           <div className="grid grid-cols-3 gap-2 pt-1">
-            <Button onClick={onSave}>{editingId ? 'Update' : 'Save'}</Button>
-            <Button variant="outline" onClick={reset}>Cancel</Button>
-            <Button variant="destructive" onClick={() => editingId && onDelete(editingId)} disabled={!editingId}>Delete</Button>
+            <ActionTooltip label={editingId ? 'Update row' : 'Save row'} shortcut={`${kb.save()} · ${kb.saveAlso()}`}>
+              <Button type="button" onClick={onSave}>
+                {editingId ? 'Update' : 'Save'}
+              </Button>
+            </ActionTooltip>
+            <ActionTooltip label="Cancel editing" shortcut={kb.cancel()}>
+              <Button type="button" variant="outline" onClick={reset}>
+                Cancel
+              </Button>
+            </ActionTooltip>
+            <ActionTooltip label="Delete current row" shortcut={kb.deleteRow()}>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => editingId && onDelete(editingId)}
+                disabled={!editingId}
+              >
+                Delete
+              </Button>
+            </ActionTooltip>
           </div>
         </div>
       </section>

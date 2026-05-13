@@ -1,13 +1,16 @@
 ﻿import * as React from 'react'
 import { Pencil, Trash2, GripVertical, Undo2, Redo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ActionTooltip } from '@/components/ui/action-tooltip'
 import { FloatingInput, FloatingSelect, FloatingNumberInput, FloatingDatePicker } from '@/components/ui/floating-field'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useFormShortcuts } from '@/hooks/use-form-shortcuts'
 import { usePosStore } from '@/state/pos-store'
 import type { IncomeEntry, IncomeType } from '@/types/pos'
 import { formatCurrency, parseMoney } from '@/lib/money'
 import { summarizeIncome } from '@/features/sidebar/calculations'
+import { kb } from '@/lib/keyboard-hints'
 
 const incomeTypes: IncomeType[] = ['Load', 'Cash Reimbursement', 'Others']
 
@@ -54,15 +57,40 @@ export function IncomePanel() {
     setIncome((prev) => prev.map((item) => (item.id === id ? { ...item, particular } : item)))
   }
 
+  useFormShortcuts({
+    onSave,
+    onReset: reset,
+    onDelete: editingId ? () => onDelete(editingId) : undefined,
+    hasEditingId: Boolean(editingId),
+  })
+
   return (
     <div className="grid h-full grid-cols-1 lg:grid-cols-[1fr_320px]">
       <section className="flex min-h-0 flex-col overflow-hidden rounded-none bg-card">
         <div className="flex items-center justify-between border-b p-3">
           <h2 className="text-sm font-semibold">Other Income</h2>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon-sm" onClick={() => undo('income')} disabled={!canUndo('income')}><Undo2 className="size-4" /></Button>
-            <Button variant="outline" size="icon-sm" onClick={() => redo('income')} disabled={!canRedo('income')}><Redo2 className="size-4" /></Button>
-            <Button variant="outline" size="sm" onClick={() => { pushHistory('income'); setIncome([]); reset() }} disabled={income.length === 0}>Clear All</Button>
+            <ActionTooltip label="Undo" shortcut={kb.undo()}>
+              <Button type="button" variant="outline" size="icon-sm" aria-label="Undo" onClick={() => undo('income')} disabled={!canUndo('income')}>
+                <Undo2 className="size-4" />
+              </Button>
+            </ActionTooltip>
+            <ActionTooltip label="Redo" shortcut={kb.redo()}>
+              <Button type="button" variant="outline" size="icon-sm" aria-label="Redo" onClick={() => redo('income')} disabled={!canRedo('income')}>
+                <Redo2 className="size-4" />
+              </Button>
+            </ActionTooltip>
+            <ActionTooltip label="Clear all income rows">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => { pushHistory('income'); setIncome([]); reset() }}
+                disabled={income.length === 0}
+              >
+                Clear All
+              </Button>
+            </ActionTooltip>
           </div>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto">
@@ -140,7 +168,7 @@ export function IncomePanel() {
           onValueChange={(v) => setDraft((s) => ({ ...s, particular: v as IncomeType }))}
           options={incomeTypes.map((t) => ({ label: t, value: t }))}
         />
-        <FloatingInput label="Remarks" value={draft.remarks} onChange={(e) => setDraft((s) => ({ ...s, remarks: e.target.value }))} />
+        <FloatingInput id="primary-input" label="Remarks" value={draft.remarks} onChange={(e) => setDraft((s) => ({ ...s, remarks: e.target.value }))} />
         <div className="grid grid-cols-6 gap-2">
           <FloatingInput 
             label="Receipt/Reference"
@@ -156,9 +184,17 @@ export function IncomePanel() {
         </div>
         <FloatingNumberInput label="Amount" inputMode="decimal" value={draft.amount} onChange={(e) => setDraft((s) => ({ ...s, amount: e.target.value }))} />
         <div className="grid grid-cols-3 gap-2">
-          <Button onClick={onSave}>{editingId ? 'Update' : 'Save'}</Button>
-          <Button variant="outline" onClick={reset}>Cancel</Button>
-          {editingId && <Button variant="destructive"  onClick={() => editingId && onDelete(editingId)}>Delete</Button>}
+          <ActionTooltip label={editingId ? 'Update row' : 'Save row'} shortcut={`${kb.save()} · ${kb.saveAlso()}`}>
+            <Button type="button" onClick={onSave}>{editingId ? 'Update' : 'Save'}</Button>
+          </ActionTooltip>
+          <ActionTooltip label="Cancel editing" shortcut={kb.cancel()}>
+            <Button type="button" variant="outline" onClick={reset}>Cancel</Button>
+          </ActionTooltip>
+          <ActionTooltip label="Delete current row" shortcut={kb.deleteRow()}>
+            <Button type="button" variant="destructive" onClick={() => editingId && onDelete(editingId)} disabled={!editingId}>
+              Delete
+            </Button>
+          </ActionTooltip>
         </div>
       </section>
     </div>

@@ -2,10 +2,13 @@
 import { Pencil, Trash2, UserPlus } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ActionTooltip } from '@/components/ui/action-tooltip'
 import { FloatingInput } from '@/components/ui/floating-field'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useFormShortcuts } from '@/hooks/use-form-shortcuts'
 import { usePosStore } from '@/state/pos-store'
 import type { InstallmentEntry } from '@/types/pos'
+import { kb } from '@/lib/keyboard-hints'
 
 const defaultDraft: Omit<InstallmentEntry, 'id' | 'added'> = {
   branch: 'GOA', lname: '', fname: '', mname: '', suffix: 'NONE', street: '', brgy: '', city: 'GOA', prov: 'CAMARINES SUR', occ: '', contact: '', agent: '', ref: '',
@@ -59,13 +62,30 @@ export function InstallmentPanel() {
     if (editingId === id) reset()
   }
 
+  useFormShortcuts({
+    onSave,
+    onReset: reset,
+    onDelete: editingId ? () => onDelete(editingId) : undefined,
+    hasEditingId: Boolean(editingId),
+  })
+
   return showForm ? (
     <div className="grid min-h-0 grid-cols-1 lg:grid-cols-[1fr_320px]">
       <section className="rounded-none bg-card">
         <div className="flex flex-wrap gap-2 border-b p-3">
-          <FloatingInput label="Search name/contact" className="max-w-60" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <FloatingInput
+            label="Search name/contact"
+            className="max-w-60"
+            id={showForm ? undefined : 'primary-input'}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
           <FloatingInput label="Filter agent" className="max-w-60" value={agentFilter} onChange={(e) => setAgentFilter(e.target.value)} />
-          <Button variant="outline" onClick={() => setShowForm(false)}>Back</Button>
+          <ActionTooltip label="Close form" shortcut={kb.cancel()}>
+            <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+              Back
+            </Button>
+          </ActionTooltip>
         </div>
         <div className="max-h-[62svh] overflow-auto">
           <Table>
@@ -98,7 +118,12 @@ export function InstallmentPanel() {
 
       <section className="space-y-3 rounded-none border-l bg-muted/20 p-3">
         <h3 className="text-sm font-semibold">{editingId ? 'Edit Customer' : 'Add Customer'}</h3>
-        <FloatingInput label="Last name" value={draft.lname} onChange={(e) => setDraft((s) => ({ ...s, lname: e.target.value }))} />
+        <FloatingInput
+          id="primary-input"
+          label="Last name"
+          value={draft.lname}
+          onChange={(e) => setDraft((s) => ({ ...s, lname: e.target.value }))}
+        />
         <FloatingInput label="First name" value={draft.fname} onChange={(e) => setDraft((s) => ({ ...s, fname: e.target.value }))} />
         <FloatingInput label="Middle name" value={draft.mname} onChange={(e) => setDraft((s) => ({ ...s, mname: e.target.value }))} />
         <FloatingInput label="Barangay" value={draft.brgy} onChange={(e) => setDraft((s) => ({ ...s, brgy: e.target.value }))} />
@@ -107,16 +132,35 @@ export function InstallmentPanel() {
         <FloatingInput label="Agent" value={draft.agent} onChange={(e) => setDraft((s) => ({ ...s, agent: e.target.value }))} />
         <FloatingInput label="Referred by" value={draft.ref} onChange={(e) => setDraft((s) => ({ ...s, ref: e.target.value }))} />
         <div className="grid grid-cols-3 gap-2">
-          <Button onClick={onSave}>{editingId ? 'Update' : 'Save'}</Button>
-          <Button variant="outline" onClick={reset}>Cancel</Button>
-          {editingId && <Button variant="destructive"  onClick={() => editingId && onDelete(editingId)}>Delete</Button>}
+          <ActionTooltip label={editingId ? 'Update customer' : 'Save customer'} shortcut={`${kb.save()} · ${kb.saveAlso()}`}>
+            <Button type="button" onClick={onSave}>{editingId ? 'Update' : 'Save'}</Button>
+          </ActionTooltip>
+          <ActionTooltip label="Clear form" shortcut={kb.cancel()}>
+            <Button type="button" variant="outline" onClick={reset}>Cancel</Button>
+          </ActionTooltip>
+          <ActionTooltip label="Delete customer" shortcut={kb.deleteRow()}>
+            <Button type="button" variant="destructive" disabled={!editingId} onClick={() => editingId && onDelete(editingId)}>
+              Delete
+            </Button>
+          </ActionTooltip>
         </div>
       </section>
     </div>
   ) : (
     <section className="rounded-none border bg-card p-4">
       <div className="flex flex-wrap items-center gap-3 border-b pb-4">
-        <Button onClick={() => { reset(); setShowForm(true) }}><UserPlus className="size-4" /> New Account</Button>
+        <ActionTooltip label="Start a new installment account" shortcut={kb.newField()}>
+          <Button
+            id="primary-input"
+            type="button"
+            onClick={() => {
+              reset()
+              setShowForm(true)
+            }}
+          >
+            <UserPlus className="size-4" /> New Account
+          </Button>
+        </ActionTooltip>
         <Button variant="outline">Add Loan</Button>
         <Button variant="outline">Add Payment</Button>
       </div>

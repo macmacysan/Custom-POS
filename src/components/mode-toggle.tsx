@@ -2,6 +2,8 @@
 import { useTheme } from 'next-themes'
 
 import { Button } from '@/components/ui/button'
+import { ActionTooltip } from '@/components/ui/action-tooltip'
+import { kb } from '@/lib/keyboard-hints'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,13 +16,15 @@ export function ModeToggle() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="relative" asChild>
-        <Button variant="outline" size="icon" className="relative size-8">
-          <Sun className="size-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-          <Moon className="absolute size-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
+      <ActionTooltip label="Theme" shortcut={kb.theme()}>
+        <DropdownMenuTrigger className="relative" asChild>
+          <Button variant="outline" size="icon" className="relative size-8" aria-label="Toggle color theme">
+            <Sun className="size-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+            <Moon className="absolute size-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+        </DropdownMenuTrigger>
+      </ActionTooltip>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme('light')}>Light</DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('dark')}>Dark</DropdownMenuItem>

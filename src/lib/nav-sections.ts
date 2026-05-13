@@ -1,5 +1,17 @@
 import type { NavSection, PosTab } from '@/types/pos'
 
+/** Maps workspace tab to undo/redo dataset (tabs without history are omitted). */
+export const TAB_UNDO_DATASET: Partial<
+  Record<PosTab, 'expenses' | 'checks' | 'income' | 'payments' | 'financing' | 'inventoryItems'>
+> = {
+  items: 'inventoryItems',
+  expenses: 'expenses',
+  checks: 'checks',
+  income: 'income',
+  payments: 'payments',
+  financing: 'financing',
+}
+
 export const SECTION_ORDER: NavSection[] = ['inventory', 'sales', 'reports']
 
 export const SECTION_LABELS: Record<NavSection, string> = {
@@ -50,4 +62,21 @@ export function tabLabel(tab: PosTab): string {
     if (hit) return hit.label
   }
   return tab
+}
+
+/** Sidebar order: Alt+1 … Alt+8 jump to these workspace tabs (see App global key handler). */
+export const WORKSPACE_TAB_HOTKEYS: PosTab[] = [
+  'items',
+  'expenses',
+  'checks',
+  'dashboard',
+  'income',
+  'payments',
+  'installment',
+  'financing',
+]
+
+export function workspaceTabHotkeyDigit(tab: PosTab): number | undefined {
+  const i = WORKSPACE_TAB_HOTKEYS.indexOf(tab)
+  return i === -1 ? undefined : i + 1
 }
