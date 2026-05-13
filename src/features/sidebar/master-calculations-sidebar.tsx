@@ -114,22 +114,6 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
           isDarkSidebar && 'dark border-slate-800 text-slate-50',
         )}
       >
-        {/* Header */}
-        <div className={cn('shrink-0 bg-sidebar p-3', isDarkSidebar && 'border-slate-800')}>
-          <div className="flex items-center gap-2">
-            <div className={cn('rounded-md bg-primary/15 p-1.5 text-primary', isDarkSidebar && 'bg-blue-500/20 text-blue-400')}>
-              <Radio className="size-4" />
-            </div>
-            <div className="leading-none">
-              <p className={cn('text-xs font-bold tracking-wide', isDarkSidebar && 'text-slate-50')}>
-                CASHIER REPORT SYSTEM
-              </p>
-              <p className={cn('text-[10px] text-muted-foreground', isDarkSidebar && 'text-slate-400')}>
-                Nueva Camsur Home Furnishing
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* Scrollable body */}
         <ScrollArea className="flex-1 min-h-0 px-2 py-2">
@@ -151,10 +135,10 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
                 <span className="text-right">AMOUNT</span>
               </div>
 
-              <ReceiptInput label="Sales Invoice"    qty={sidebar.salesInvoiceQty}   onQtyChange={(v) => updateSidebarField('salesInvoiceQty', v)}   amount={sidebar.salesInvoice}    onAmountChange={(v) => updateSidebarField('salesInvoice', v)}    isDark={isDarkSidebar} />
-              <ReceiptInput label="SI - Trading"     qty={sidebar.siTradingQty}       onQtyChange={(v) => updateSidebarField('siTradingQty', v)}       amount={sidebar.siTrading}        onAmountChange={(v) => updateSidebarField('siTrading', v)}        isDark={isDarkSidebar} />
-              <ReceiptInput label="Delivery Receipt" qty={sidebar.deliveryReceiptQty} onQtyChange={(v) => updateSidebarField('deliveryReceiptQty', v)} amount={sidebar.deliveryReceipt}  onAmountChange={(v) => updateSidebarField('deliveryReceipt', v)}  isDark={isDarkSidebar} />
-              <ReceiptInput label="Bobs Pawnshop"    qty={sidebar.bobsPawnshopQty}    onQtyChange={(v) => updateSidebarField('bobsPawnshopQty', v)}    amount={sidebar.bobsPawnshop}     onAmountChange={(v) => updateSidebarField('bobsPawnshop', v)}     isDark={isDarkSidebar} />
+              <ReceiptInput label="Sales Invoice" qty={sidebar.salesInvoiceQty} onQtyChange={(v) => updateSidebarField('salesInvoiceQty', v)} amount={sidebar.salesInvoice} onAmountChange={(v) => updateSidebarField('salesInvoice', v)} isDark={isDarkSidebar} />
+              <ReceiptInput label="SI - Trading" qty={sidebar.siTradingQty} onQtyChange={(v) => updateSidebarField('siTradingQty', v)} amount={sidebar.siTrading} onAmountChange={(v) => updateSidebarField('siTrading', v)} isDark={isDarkSidebar} />
+              <ReceiptInput label="Delivery Receipt" qty={sidebar.deliveryReceiptQty} onQtyChange={(v) => updateSidebarField('deliveryReceiptQty', v)} amount={sidebar.deliveryReceipt} onAmountChange={(v) => updateSidebarField('deliveryReceipt', v)} isDark={isDarkSidebar} />
+              <ReceiptInput label="Bobs Pawnshop" qty={sidebar.bobsPawnshopQty} onQtyChange={(v) => updateSidebarField('bobsPawnshopQty', v)} amount={sidebar.bobsPawnshop} onAmountChange={(v) => updateSidebarField('bobsPawnshop', v)} isDark={isDarkSidebar} />
 
               <div className="pt-1.5">
                 <TotalRow label="Subtotal Receipts" value={totals.subtotalReceipts} highlight isDark={isDarkSidebar} />
@@ -165,9 +149,9 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
 
             {/* Section 1.5: Other */}
             <div className="space-y-0.5">
-              <StaticRow label="Other Income"    value={totals.otherincome.drawings}     isDark={isDarkSidebar} />
+              <StaticRow label="Other Income" value={totals.otherincome.drawings} isDark={isDarkSidebar} />
               <StaticRow label="Cash Collection" value={totals.cashcollection.purchases} isDark={isDarkSidebar} hoverItems={totals.paymentsList} />
-              <InteractiveRow label="Credit"     value={totals.creditTotals.credit}      onClick={() => setDeductionsOpen(true)} isDark={isDarkSidebar} />
+              <InteractiveRow label="Credit" value={totals.creditTotals.credit} onClick={() => setDeductionsOpen(true)} isDark={isDarkSidebar} />
               <div className="pt-1.5">
                 <TotalRow label="Total Cash Receipts" value={totals.totalPaidCash} highlight isDark={isDarkSidebar} />
               </div>
@@ -175,10 +159,10 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
 
             {/* Section 2: Outflows */}
             <div className="space-y-0.5">
-              <StaticRow label="Cash Expenses"  value={totals.expenseTotals.company}   isDark={isDarkSidebar} hoverItems={totals.cashExpensesList} />
-              <StaticRow label="Drawings"        value={totals.expenseTotals.drawings}  isDark={isDarkSidebar} hoverItems={totals.drawingsList} />
-              <StaticRow label="Cash Purchases"  value={totals.expenseTotals.purchases} isDark={isDarkSidebar} hoverItems={totals.cashPurchasesList} />
-              <InteractiveRow label="Deductions" value={totals.deductionsTotal}         onClick={() => setDeductionsOpen(true)} isDark={isDarkSidebar} hoverItems={totals.deductionsList} />
+              <StaticRow label="Cash Expenses" value={totals.expenseTotals.company} isDark={isDarkSidebar} hoverItems={totals.cashExpensesList} />
+              <StaticRow label="Drawings" value={totals.expenseTotals.drawings} isDark={isDarkSidebar} hoverItems={totals.drawingsList} />
+              <StaticRow label="Cash Purchases" value={totals.expenseTotals.purchases} isDark={isDarkSidebar} hoverItems={totals.cashPurchasesList} />
+              <InteractiveRow label="Deductions" value={totals.deductionsTotal} onClick={() => setDeductionsOpen(true)} isDark={isDarkSidebar} hoverItems={totals.deductionsList} />
               <div className="pt-1.5">
                 <TotalRow label="Total Paid Out" value={totals.totalPaidOut} highlight isDark={isDarkSidebar} />
               </div>
@@ -189,11 +173,11 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
             {/* Section 3: Denominations & Checks */}
             <div className="space-y-0.5 pb-2">
               <SectionHeader isDark={isDarkSidebar}>Denomination</SectionHeader>
-              <InteractiveRow label="Cash Amount"  value={totals.cashAmount}           onClick={() => setDenomOpen(true)} isDark={isDarkSidebar} hoverItems={totals.cashAmountList} />
-              <StaticRow label="Bank Check"         value={totals.checkTotals.check}    isDark={isDarkSidebar} hoverItems={totals.bankCheckList} />
-              <StaticRow label="Bank Transfer"      value={totals.checkTotals.transfer} isDark={isDarkSidebar} hoverItems={totals.bankTransferList} />
-              <StaticRow label="GCash"              value={totals.checkTotals.gcash}    isDark={isDarkSidebar} hoverItems={totals.gcashList} />
-              <StaticRow label="Other E-Wallet"     value={totals.checkTotals.ewallet}  isDark={isDarkSidebar} hoverItems={totals.otherEWalletList} />
+              <InteractiveRow label="Cash Amount" value={totals.cashAmount} onClick={() => setDenomOpen(true)} isDark={isDarkSidebar} hoverItems={totals.cashAmountList} />
+              <StaticRow label="Bank Check" value={totals.checkTotals.check} isDark={isDarkSidebar} hoverItems={totals.bankCheckList} />
+              <StaticRow label="Bank Transfer" value={totals.checkTotals.transfer} isDark={isDarkSidebar} hoverItems={totals.bankTransferList} />
+              <StaticRow label="GCash" value={totals.checkTotals.gcash} isDark={isDarkSidebar} hoverItems={totals.gcashList} />
+              <StaticRow label="Other E-Wallet" value={totals.checkTotals.ewallet} isDark={isDarkSidebar} hoverItems={totals.otherEWalletList} />
               <div className="pt-1.5">
                 <TotalRow label="Total Payments" value={totals.totalPayments} highlight isDark={isDarkSidebar} />
               </div>
@@ -206,13 +190,12 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
           <TotalRow label="Expected Cash" value={totals.expectedCash} highlight isDark={isDarkSidebar} />
           <MoneyInput label="Cash Remitted" value={sidebar.cashRemitted} onChange={(v) => updateSidebarField('cashRemitted', v)} isDark={isDarkSidebar} />
 
-          <div className={`mt-1.5 rounded-md border px-2 py-1.5 text-[12px] font-bold text-center tracking-wide transition-colors ${
-            totals.cashVariance < 0
+          <div className={`mt-1.5 rounded-md border px-2 py-1.5 text-[12px] font-bold text-center tracking-wide transition-colors ${totals.cashVariance < 0
               ? 'border-red-500/30 bg-red-500/10 text-red-500 dark:text-red-400'
               : totals.cashVariance > 0
-              ? 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400'
-              : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-          }`}>
+                ? 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+            }`}>
             Cash Variance: {totals.cashVariance === 0 ? 'Balanced' : formatCurrency(totals.cashVariance)}
           </div>
         </div>
