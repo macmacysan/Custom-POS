@@ -56,7 +56,7 @@ export function ExpensesPanel() {
     }))
   }, [expenses, currentDate])
 
-  const syncToSheet = React.useCallback(async () => {
+  const syncToSheet = React.useCallback(async (overridePayload?: any[]) => {
     // Disable if not running in Electron
     if (typeof window !== 'undefined' && window.electronAPI) {
       if (!navigator.onLine) {
@@ -69,7 +69,7 @@ export function ExpensesPanel() {
       setSyncError(null)
 
       try {
-        const payload = formatForSheet()
+        const payload = overridePayload || formatForSheet()
         console.log('Syncing expenses to Google Sheets...', payload)
         await window.electronAPI.syncExpenses(payload)
         console.log('Sync complete!')
@@ -128,11 +128,10 @@ export function ExpensesPanel() {
     setExpenses((prev) => {
       const updated = editingId ? prev.map((entry) => (entry.id === editingId ? next : entry)) : [...prev, next]
       // 2. Saved automatic (can be disabled later by removing this call)
-      // Note: We use setTimeout to allow state to settle, or ideally we just call sync in an effect.
-      // Since syncToSheet uses latest state, let's wait a tick.
-      setTimeout(() => { if (window.electronAPI) window.electronAPI.syncExpenses(updated.map((exp, i) => ({
-          rowId: i + 1, date: currentDate.toISOString().split('T')[0], type: exp.type, description: exp.description, receipt: exp.receipt, category: exp.category, vat: exp.vat, amount: exp.amount
-      }))) }, 100)
+      const payload = updated.map((exp, i) => ({
+        rowId: i + 1, date: currentDate.toISOString().split('T')[0], type: exp.type, description: exp.description, receipt: exp.receipt, category: exp.category, vat: exp.vat, amount: exp.amount
+      }))
+      setTimeout(() => syncToSheet(payload), 0)
       return updated
     })
     reset()
@@ -142,9 +141,10 @@ export function ExpensesPanel() {
     pushHistory('expenses')
     setExpenses((prev) => {
       const updated = prev.filter((item) => item.id !== id)
-      setTimeout(() => { if (window.electronAPI) window.electronAPI.syncExpenses(updated.map((exp, i) => ({
-          rowId: i + 1, date: currentDate.toISOString().split('T')[0], type: exp.type, description: exp.description, receipt: exp.receipt, category: exp.category, vat: exp.vat, amount: exp.amount
-      }))) }, 100)
+      const payload = updated.map((exp, i) => ({
+        rowId: i + 1, date: currentDate.toISOString().split('T')[0], type: exp.type, description: exp.description, receipt: exp.receipt, category: exp.category, vat: exp.vat, amount: exp.amount
+      }))
+      setTimeout(() => syncToSheet(payload), 0)
       return updated
     })
     if (editingId === id) reset()
