@@ -32,11 +32,65 @@ const defaultDraft: Draft = {
 }
 
 export function ExpensesPanel() {
-  const { expenses, setExpenses, pushHistory, undo, redo, canUndo, canRedo, settings } = usePosStore()
+  const { expenses, setExpenses, pushHistory, undo, redo, canUndo, canRedo, settings, currentDate, setSyncStatus, setSyncError, setLastSyncTime } = usePosStore()
   const [editingId, setEditingId] = React.useState<string | null>(null)
   const [draft, setDraft] = React.useState<Draft>(defaultDraft)
 
   const totals = summarizeExpenses(expenses)
+
+  // -- Google Sheets Sync Logic --
+  // Format data to match Google Sheet columns: [Row ID, Date, Type, Description, Receipt, Category, VAT, Amount]
+  const formatForSheet = React.useCallback(() => {
+    // Current date formatted as YYYY-MM-DD or similar
+    const dateStr = currentDate.toISOString().split('T')[0]
+    
+    return expenses.map((exp, index) => ({
+      rowId: index + 1, // Col A: Number of rows ID
+      date: dateStr,    // Col B: Current date as stated in Nav Bar
+      type: exp.type,
+      description: exp.description,
+      receipt: exp.receipt,
+      category: exp.category,
+      vat: exp.vat,
+      amount: exp.amount
+    }))
+  }, [expenses, currentDate])
+
+  const syncToSheet = React.useCallback(async () => {
+    // Disable if not running in Electron
+    if (typeof window !== 'undefined' && window.electronAPI) {
+      if (!navigator.onLine) {
+        setSyncStatus('offline')
+        setSyncError('No internet connection')
+        return
+      }
+
+      setSyncStatus('syncing')
+      setSyncError(null)
+
+      try {
+        const payload = formatForSheet()
+        console.log('Syncing expenses to Google Sheets...', payload)
+        await window.electronAPI.syncExpenses(payload)
+        console.log('Sync complete!')
+        setSyncStatus('success')
+        setLastSyncTime(new Date())
+      } catch (err: any) {
+        console.error('Failed to sync to Google Sheets', err)
+        setSyncStatus('error')
+        setSyncError(err?.message || 'Unknown error during sync')
+      }
+    }
+  }, [formatForSheet, setSyncStatus, setSyncError, setLastSyncTime])
+
+  // 1. Temporary 5-minute sync timer
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      syncToSheet()
+    }, 5 * 60 * 1000) // 5 minutes
+    
+    return () => clearInterval(timer)
+  }, [syncToSheet])
 
   function reset() {
     setEditingId(null)
@@ -71,15 +125,28 @@ export function ExpensesPanel() {
       amount,
     }
 
-    setExpenses((prev) =>
-      editingId ? prev.map((entry) => (entry.id === editingId ? next : entry)) : [...prev, next],
-    )
+    setExpenses((prev) => {
+      const updated = editingId ? prev.map((entry) => (entry.id === editingId ? next : entry)) : [...prev, next]
+      // 2. Saved automatic (can be disabled later by removing this call)
+      // Note: We use setTimeout to allow state to settle, or ideally we just call sync in an effect.
+      // Since syncToSheet uses latest state, let's wait a tick.
+      setTimeout(() => { if (window.electronAPI) window.electronAPI.syncExpenses(updated.map((exp, i) => ({
+          rowId: i + 1, date: currentDate.toISOString().split('T')[0], type: exp.type, description: exp.description, receipt: exp.receipt, category: exp.category, vat: exp.vat, amount: exp.amount
+      }))) }, 100)
+      return updated
+    })
     reset()
   }
 
   function onDelete(id: string) {
     pushHistory('expenses')
-    setExpenses((prev) => prev.filter((item) => item.id !== id))
+    setExpenses((prev) => {
+      const updated = prev.filter((item) => item.id !== id)
+      setTimeout(() => { if (window.electronAPI) window.electronAPI.syncExpenses(updated.map((exp, i) => ({
+          rowId: i + 1, date: currentDate.toISOString().split('T')[0], type: exp.type, description: exp.description, receipt: exp.receipt, category: exp.category, vat: exp.vat, amount: exp.amount
+      }))) }, 100)
+      return updated
+    })
     if (editingId === id) reset()
   }
 

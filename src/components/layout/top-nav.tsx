@@ -1,4 +1,4 @@
-﻿import * as React from "react"
+import * as React from "react"
 import { Settings, Keyboard, ChevronLeft, ChevronRight, Menu } from "lucide-react"
 import { useTheme } from "next-themes"
 
@@ -8,6 +8,8 @@ import { ShortcutGuideDialog } from "@/components/dialogs/shortcut-guide-dialog"
 import { MonthlyCalendarDialog } from "@/components/dialogs/monthly-calendar-dialog"
 
 import { Button } from "@/components/ui/button"
+
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { usePosStore } from "@/state/pos-store"
 import { SECTION_LABELS, sectionForTab, tabLabel } from "@/lib/nav-sections"
@@ -20,6 +22,9 @@ export function TopNav() {
     changeDate,
     goToToday,
     setMobileSidebarOpen,
+    syncStatus,
+    syncError,
+    lastSyncTime,
   } = usePosStore()
 
   const [settingsOpen, setSettingsOpen] = React.useState(false)
@@ -66,7 +71,39 @@ export function TopNav() {
           </Button>
         </div>
 
-        <Button type="button" variant="outline" size="icon-sm" onClick={() => setShortcutOpen(true)}>
+        <div className="ml-auto hidden items-center lg:flex">
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-2 py-1 text-xs font-medium cursor-default">
+                  <span className={`size-2 shrink-0 rounded-full ${
+                    syncStatus === 'success' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' :
+                    syncStatus === 'syncing' ? 'bg-blue-500 animate-pulse' :
+                    syncStatus === 'error' ? 'bg-red-500' :
+                    syncStatus === 'offline' ? 'bg-yellow-500' :
+                    'bg-muted-foreground'
+                  }`} />
+                  <span className="hidden sm:inline-block">
+                    {syncStatus === 'success' ? 'Connected' :
+                     syncStatus === 'syncing' ? 'Syncing...' :
+                     syncStatus === 'error' ? 'Cannot connect' :
+                     syncStatus === 'offline' ? 'Offline' :
+                     'Not connected'}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" align="end" className="max-w-[250px]">
+                <div className="text-xs space-y-1">
+                  <p className="font-semibold">Sync Status: <span className="capitalize">{syncStatus}</span></p>
+                  {lastSyncTime && <p className="text-muted-foreground">Last sync: {lastSyncTime.toLocaleTimeString()}</p>}
+                  {syncError && <p className="text-red-400 break-words mt-1">{syncError}</p>}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        <Button type="button" variant="outline" size="icon-sm" onClick={() => setShortcutOpen(true)} className="ml-auto lg:ml-0">
           <Keyboard className="size-4" />
         </Button>
 

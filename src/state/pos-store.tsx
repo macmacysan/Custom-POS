@@ -31,7 +31,15 @@ const cloneList = <T,>(list: T[]): T[] => list.map((item) => ({ ...item }))
 
 type DatasetKey = 'expenses' | 'checks' | 'income' | 'payments' | 'financing' | 'inventoryItems'
 
+export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error' | 'offline'
+
 type PosStoreValue = {
+  syncStatus: SyncStatus
+  setSyncStatus: React.Dispatch<React.SetStateAction<SyncStatus>>
+  syncError: string | null
+  setSyncError: React.Dispatch<React.SetStateAction<string | null>>
+  lastSyncTime: Date | null
+  setLastSyncTime: React.Dispatch<React.SetStateAction<Date | null>>
   activeTab: PosTab
   setActiveTab: (tab: PosTab) => void
   setActiveSection: (section: NavSection) => void
@@ -87,6 +95,10 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
   const [activeTab, setActiveTab] = React.useState<PosTab>(initialTab)
   const [currentDate, setCurrentDate] = React.useState(new Date())
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false)
+
+  const [syncStatus, setSyncStatus] = React.useState<SyncStatus>('idle')
+  const [syncError, setSyncError] = React.useState<string | null>(null)
+  const [lastSyncTime, setLastSyncTime] = React.useState<Date | null>(null)
   
   const [settings, setSettings] = React.useState<AppSettings>(() => loadSavedState('settings', initialSettings))
   const [expenses, setExpenses] = React.useState<ExpenseEntry[]>(() => loadSavedState('expenses', initialExpenses))
@@ -232,6 +244,12 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
 
   const value = React.useMemo<PosStoreValue>(
     () => ({
+      syncStatus,
+      setSyncStatus,
+      syncError,
+      setSyncError,
+      lastSyncTime,
+      setLastSyncTime,
       activeTab,
       setActiveTab,
       setActiveSection,
@@ -268,6 +286,9 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
       updateDenomination,
     }),
     [
+      syncStatus,
+      syncError,
+      lastSyncTime,
       activeTab,
       setActiveTab,
       setActiveSection,
