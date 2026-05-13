@@ -2,7 +2,7 @@
 
 const shortcuts = [
   ['?', 'Open shortcut guide'],
-  ['Alt+1..5', 'Switch tabs'],
+  ['Alt+1..5', 'Jump to common workspace tabs'],
   ['Alt+N', 'Focus active tab form'],
   ['Alt+B', 'Toggle sidebar on mobile'],
   ['Alt+? / Alt+?', 'Change report date'],

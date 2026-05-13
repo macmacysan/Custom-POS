@@ -22,10 +22,19 @@ import {
   Activity,
   AlertCircle,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "@/components/ui/table"
 import { usePosStore } from "@/state/pos-store"
 import { formatCurrency } from "@/lib/money"
 import { calculateMasterTotals } from "@/features/sidebar/calculations"
@@ -291,6 +300,56 @@ export function DashboardPanel() {
             </CardContent>
           </Card>
         </div>
+
+        {/* ── Transaction Ledger ────────────────────────────────────── */}
+        <Card className="overflow-hidden">
+          <CardHeader className="flex flex-col gap-3 px-5 pt-4 pb-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-sm font-semibold">Transaction Ledger</CardTitle>
+              <CardDescription className="text-xs">A quick view of the latest POS payments and receipts.</CardDescription>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm">New Sale</Button>
+              <Button variant="outline" size="sm">Export</Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table className="min-w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Transaction</TableHead>
+                  <TableHead>Reference</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Time</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentActivity.map((item) => (
+                  <TableRow key={item.ref}>
+                    <TableCell>{item.type}</TableCell>
+                    <TableCell>{item.ref}</TableCell>
+                    <TableCell className="font-mono text-foreground">{formatCurrency(item.amount)}</TableCell>
+                    <TableCell>
+                      <span className={cn(
+                        "inline-flex rounded-full px-2 py-1 text-[10px] font-semibold",
+                        item.dir === "in"
+                          ? "bg-emerald-500/10 text-emerald-600"
+                          : "bg-red-500/10 text-red-600"
+                      )}>
+                        {item.dir === "in" ? "Paid" : "Refund"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right text-xs text-muted-foreground">{item.time}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+          <CardFooter className="px-5 pb-4 pt-3">
+            <span className="text-xs text-muted-foreground">Showing {recentActivity.length} recent transactions.</span>
+          </CardFooter>
+        </Card>
 
         {/* ── Bottom Row ───────────────────────────────────────────── */}
         <div className="grid gap-4 lg:grid-cols-3">

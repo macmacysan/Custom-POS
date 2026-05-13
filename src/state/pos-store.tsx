@@ -11,12 +11,14 @@ import {
   initialSidebar,
   initialTab,
 } from '@/state/seed'
+import { firstTabInSection, sectionForTab } from '@/lib/nav-sections'
 import type {
   AppSettings,
   CheckEntry,
   ExpenseEntry,
   IncomeEntry,
   InstallmentEntry,
+  NavSection,
   PaymentEntry,
   PosTab,
   SidebarState,
@@ -30,6 +32,7 @@ type DatasetKey = 'expenses' | 'checks' | 'income' | 'payments'
 type PosStoreValue = {
   activeTab: PosTab
   setActiveTab: (tab: PosTab) => void
+  setActiveSection: (section: NavSection) => void
   currentDate: Date
   changeDate: (days: number) => void
   goToToday: () => void
@@ -94,6 +97,13 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const goToToday = React.useCallback(() => setCurrentDate(new Date()), [])
+
+  const setActiveSection = React.useCallback((section: NavSection) => {
+    setActiveTab((current) => {
+      if (sectionForTab(current) === section) return current
+      return firstTabInSection(section)
+    })
+  }, [])
 
   const currentMap = React.useMemo(() => ({ expenses, checks, income, payments }), [checks, expenses, income, payments])
 
@@ -179,6 +189,7 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
     () => ({
       activeTab,
       setActiveTab,
+      setActiveSection,
       currentDate,
       changeDate,
       goToToday,
@@ -209,6 +220,8 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       activeTab,
+      setActiveTab,
+      setActiveSection,
       changeDate,
       checks,
       currentDate,

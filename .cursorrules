@@ -1,1 +1,4 @@
-1. Ensure all UI Components use Tailwind CSS classes.
+- Always use Shadcn UI for components.
+- Use TypeScript with strict types.
+- Ensure all POS transactions include a 'branch_id' and 'timestamp'.
+- Follow Philippine BIR requirements for receipt numbering.

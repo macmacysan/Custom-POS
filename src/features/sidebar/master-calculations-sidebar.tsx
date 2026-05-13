@@ -87,7 +87,7 @@ function SidebarTooltip({ children, items }: { children: React.ReactNode; items:
 /* ============================================================================
    Main sidebar
 ============================================================================= */
-export function MasterCalculationsSidebar() {
+export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embeddedInSheet?: boolean }) {
   const {
     sidebar,
     settings,
@@ -98,7 +98,6 @@ export function MasterCalculationsSidebar() {
     checks,
     income,
     payments,
-    mobileSidebarOpen,
   } = usePosStore()
 
   const [deductionsOpen, setDeductionsOpen] = React.useState(false)
@@ -110,8 +109,9 @@ export function MasterCalculationsSidebar() {
     <TooltipProvider delayDuration={150} skipDelayDuration={100}>
       <aside
         className={cn(
-          `h-full w-75 shrink-0 border-r bg-sidebar flex flex-col ${mobileSidebarOpen ? '' : 'max-md:hidden'}`,
-          isDarkSidebar && 'dark text-slate-50 border-slate-800',
+          'h-full w-75 shrink-0 flex-col border-r bg-sidebar',
+          embeddedInSheet ? 'flex min-h-0' : 'hidden lg:flex',
+          isDarkSidebar && 'dark border-slate-800 text-slate-50',
         )}
       >
         {/* Header */}
@@ -360,9 +360,14 @@ function InteractiveRow({ label, value, onClick, isDark, hoverItems }: { label: 
   const hasItems = hoverItems && hoverItems.length > 0
 
   const row = (
-    <button
+    <Button
+      type="button"
+      variant="ghost"
       onClick={onClick}
-      className={cn('flex w-full items-center justify-between px-2 py-0.5 hover:bg-muted/40 rounded-[4px] transition-colors cursor-pointer group', isDark)}
+      className={cn(
+        'group h-auto min-h-0 w-full items-center justify-between gap-2 rounded-md px-2 py-0.5 font-normal hover:bg-muted/40',
+        isDark && 'hover:bg-slate-800/60',
+      )}
     >
       <div className="flex items-center gap-1">
         <span className={cn('text-[11px] text-muted-foreground group-hover:text-foreground transition-colors', isDark && 'text-slate-400 group-hover:text-slate-200')}>
@@ -377,7 +382,7 @@ function InteractiveRow({ label, value, onClick, isDark, hoverItems }: { label: 
       <span className={cn('text-[12px] tabular-nums font-mono font-medium text-foreground pr-1', isDark && 'text-slate-200')}>
         {formatCurrency(value)}
       </span>
-    </button>
+    </Button>
   )
 
   if (!hasItems) return row

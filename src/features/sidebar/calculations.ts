@@ -79,18 +79,18 @@ export function calculateMasterTotals(sidebar: SidebarState, expenses: ExpenseEn
   const cashVariance = cashAmount - totalPaidOut
 
   // Detailed lists for hover cards
-  const cashExpensesList = expenses.filter(e => e.type === 'Company Expenses').map(e => ({ description: e.description || e.particular, amount: e.amount }))
-  const drawingsList = expenses.filter(e => e.type === 'Drawings').map(e => ({ description: e.description || e.particular, amount: e.amount }))
-  const cashPurchasesList = expenses.filter(e => e.type === 'Purchases').map(e => ({ description: e.description || e.particular, amount: e.amount }))
+  const cashExpensesList = expenses.filter(e => e.type === 'Company Expenses').map(e => ({ description: e.description || 'Company Expense', amount: e.amount }))
+  const drawingsList = expenses.filter(e => e.type === 'Drawings').map(e => ({ description: e.description || 'Drawing', amount: e.amount }))
+  const cashPurchasesList = expenses.filter(e => e.type === 'Purchases').map(e => ({ description: e.description || 'Purchase', amount: e.amount }))
   const deductionsList = Object.entries(sidebar.deductions).filter(([, value]) => value > 0).map(([name, value]) => ({ description: name, amount: value }))
   const cashAmountList = denominationValues.map(denom => {
     const qty = sidebar.denominationQuantities[String(denom)] ?? 0
     return { description: `${denom} x ${qty}`, amount: qty * denom }
   }).filter(item => item.amount > 0)
-  const bankCheckList = checks.filter(c => c.type === 'Bank Check').map(c => ({ description: c.checkNumber || c.particular, amount: c.amount }))
-  const bankTransferList = checks.filter(c => c.type === 'Bank Transfer').map(c => ({ description: c.particular, amount: c.amount }))
-  const gcashList = checks.filter(c => c.type === 'GCash').map(c => ({ description: c.particular, amount: c.amount }))
-  const otherEWalletList = checks.filter(c => c.type === 'Other E-Wallet').map(c => ({ description: c.particular, amount: c.amount }))
+  const bankCheckList = checks.filter(c => c.type === 'Bank Check').map(c => ({ description: c.checkNo || c.bank || 'Bank Check', amount: c.amount }))
+  const bankTransferList = checks.filter(c => c.type === 'Bank Transfer').map(c => ({ description: c.bank || c.account || 'Bank Transfer', amount: c.amount }))
+  const gcashList = checks.filter(c => c.type === 'GCash').map(c => ({ description: c.account || c.bank || 'GCash', amount: c.amount }))
+  const otherEWalletList = checks.filter(c => c.type === 'Other E-Wallet').map(c => ({ description: c.account || c.bank || 'Other E-Wallet', amount: c.amount }))
   const paymentsList = paymentsBreakdownList
 
   return {

@@ -1,5 +1,7 @@
 ﻿export type PosTab = 'dashboard' | 'expenses' | 'checks' | 'income' | 'payments' | 'installment' | 'financing'
 
+export type NavSection = 'inventory' | 'sales' | 'reports'
+
 export type ExpenseType = 'Company Expenses' | 'Purchases' | 'Drawings'
 export type VatType = 'Vat' | 'Non-Vat'
 
