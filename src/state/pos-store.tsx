@@ -1,4 +1,4 @@
-﻿/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable react-refresh/only-export-components */
 import * as React from 'react'
 
 import { parseMoney } from '@/lib/money'
@@ -16,8 +16,10 @@ import type {
   AppSettings,
   CheckEntry,
   ExpenseEntry,
+  FinancingEntry,
   IncomeEntry,
   InstallmentEntry,
+  InventoryItem,
   NavSection,
   PaymentEntry,
   PosTab,
@@ -27,7 +29,7 @@ import type {
 type HistoryState<T> = { past: T[][]; future: T[][] }
 const cloneList = <T,>(list: T[]): T[] => list.map((item) => ({ ...item }))
 
-type DatasetKey = 'expenses' | 'checks' | 'income' | 'payments'
+type DatasetKey = 'expenses' | 'checks' | 'income' | 'payments' | 'financing' | 'inventoryItems'
 
 type PosStoreValue = {
   activeTab: PosTab
@@ -48,6 +50,10 @@ type PosStoreValue = {
   setIncome: React.Dispatch<React.SetStateAction<IncomeEntry[]>>
   payments: PaymentEntry[]
   setPayments: React.Dispatch<React.SetStateAction<PaymentEntry[]>>
+  financing: FinancingEntry[]
+  setFinancing: React.Dispatch<React.SetStateAction<FinancingEntry[]>>
+  inventoryItems: InventoryItem[]
+  setInventoryItems: React.Dispatch<React.SetStateAction<InventoryItem[]>>
   installments: InstallmentEntry[]
   setInstallments: React.Dispatch<React.SetStateAction<InstallmentEntry[]>>
   sidebar: SidebarState
@@ -64,28 +70,48 @@ type PosStoreValue = {
 
 const PosStoreContext = React.createContext<PosStoreValue | null>(null)
 
+const LOCAL_STORAGE_KEY = 'pos-app-state-v2'
+
+function loadSavedState<T>(key: string, fallback: T): T {
+  try {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY)
+    if (!saved) return fallback
+    const parsed = JSON.parse(saved)
+    return parsed[key] !== undefined ? parsed[key] : fallback
+  } catch {
+    return fallback
+  }
+}
+
 export function PosStoreProvider({ children }: { children: React.ReactNode }) {
   const [activeTab, setActiveTab] = React.useState<PosTab>(initialTab)
   const [currentDate, setCurrentDate] = React.useState(new Date())
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false)
-  const [settings, setSettings] = React.useState<AppSettings>(initialSettings)
-  const [expenses, setExpenses] = React.useState<ExpenseEntry[]>(initialExpenses)
-  const [checks, setChecks] = React.useState<CheckEntry[]>(initialChecks)
-  const [income, setIncome] = React.useState<IncomeEntry[]>(initialIncome)
-  const [payments, setPayments] = React.useState<PaymentEntry[]>([])
-  const [installments, setInstallments] = React.useState<InstallmentEntry[]>(initialInstallments)
-  const [sidebar, setSidebar] = React.useState<SidebarState>(initialSidebar)
+  
+  const [settings, setSettings] = React.useState<AppSettings>(() => loadSavedState('settings', initialSettings))
+  const [expenses, setExpenses] = React.useState<ExpenseEntry[]>(() => loadSavedState('expenses', initialExpenses))
+  const [checks, setChecks] = React.useState<CheckEntry[]>(() => loadSavedState('checks', initialChecks))
+  const [income, setIncome] = React.useState<IncomeEntry[]>(() => loadSavedState('income', initialIncome))
+  const [payments, setPayments] = React.useState<PaymentEntry[]>(() => loadSavedState('payments', []))
+  const [financing, setFinancing] = React.useState<FinancingEntry[]>(() => loadSavedState('financing', []))
+  const [inventoryItems, setInventoryItems] = React.useState<InventoryItem[]>(() => loadSavedState('inventoryItems', []))
+  const [installments, setInstallments] = React.useState<InstallmentEntry[]>(() => loadSavedState('installments', initialInstallments))
+  const [sidebar, setSidebar] = React.useState<SidebarState>(() => loadSavedState('sidebar', initialSidebar))
 
   const [history, setHistory] = React.useState<{
     expenses: HistoryState<ExpenseEntry>
     checks: HistoryState<CheckEntry>
     income: HistoryState<IncomeEntry>
     payments: HistoryState<PaymentEntry>
+    financing: HistoryState<FinancingEntry>
+    inventoryItems: HistoryState<InventoryItem>
   }>({ 
     expenses: { past: [], future: [] }, 
     checks: { past: [], future: [] }, 
     income: { past: [], future: [] },
-    payments: { past: [], future: [] } 
+    payments: { past: [], future: [] },
+    financing: { past: [], future: [] },
+    inventoryItems: { past: [], future: [] }
   })
 
   const changeDate = React.useCallback((days: number) => {
@@ -96,6 +122,21 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
+  React.useEffect(() => {
+    const toSave = {
+      settings,
+      expenses,
+      checks,
+      income,
+      payments,
+      financing,
+      inventoryItems,
+      installments,
+      sidebar,
+    }
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(toSave))
+  }, [settings, expenses, checks, income, payments, financing, inventoryItems, installments, sidebar])
+
   const goToToday = React.useCallback(() => setCurrentDate(new Date()), [])
 
   const setActiveSection = React.useCallback((section: NavSection) => {
@@ -105,7 +146,7 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
-  const currentMap = React.useMemo(() => ({ expenses, checks, income, payments }), [checks, expenses, income, payments])
+  const currentMap = React.useMemo(() => ({ expenses, checks, income, payments, financing, inventoryItems }), [checks, expenses, income, payments, financing, inventoryItems])
 
   const pushHistory = React.useCallback(
     (key: DatasetKey, snapshot?: unknown[]) => {
@@ -134,6 +175,8 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
         if (key === 'checks') setChecks(cloneList(previous as CheckEntry[]))
         if (key === 'income') setIncome(cloneList(previous as IncomeEntry[]))
         if (key === 'payments') setPayments(cloneList(previous as PaymentEntry[]))
+        if (key === 'financing') setFinancing(cloneList(previous as FinancingEntry[]))
+        if (key === 'inventoryItems') setInventoryItems(cloneList(previous as InventoryItem[]))
 
         return {
           ...prev,
@@ -157,6 +200,8 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
         if (key === 'checks') setChecks(cloneList(next as CheckEntry[]))
         if (key === 'income') setIncome(cloneList(next as IncomeEntry[]))
         if (key === 'payments') setPayments(cloneList(next as PaymentEntry[]))
+        if (key === 'financing') setFinancing(cloneList(next as FinancingEntry[]))
+        if (key === 'inventoryItems') setInventoryItems(cloneList(next as InventoryItem[]))
 
         return {
           ...prev,
@@ -205,6 +250,10 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
       setIncome,
       payments,
       setPayments,
+      financing,
+      setFinancing,
+      inventoryItems,
+      setInventoryItems,
       installments,
       setInstallments,
       sidebar,
@@ -229,6 +278,8 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
       goToToday,
       income,
       payments,
+      financing,
+      inventoryItems,
       installments,
       mobileSidebarOpen,
       settings,

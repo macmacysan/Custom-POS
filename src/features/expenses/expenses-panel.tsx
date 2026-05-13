@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Pencil, Trash2, GripVertical, Undo2, Redo2} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { FloatingInput, FloatingSelect } from '@/components/ui/floating-field'
+import { FloatingInput, FloatingSelect, FloatingNumberInput } from '@/components/ui/floating-field'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { expenseCategories } from '@/state/seed'
@@ -65,7 +65,7 @@ export function ExpensesPanel() {
       id: editingId ?? Date.now().toString(),
       type: draft.type,
       description: draft.description.trim(),
-      receipt: draft.receipt.trim() || '�',
+      receipt: draft.receipt.trim() || '',
       category: draft.category,
       vat: draft.vat,
       amount,
@@ -103,7 +103,7 @@ export function ExpensesPanel() {
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon-sm" onClick={() => undo('expenses')} disabled={!canUndo('expenses')}><Undo2 className="size-4" /></Button>
             <Button variant="outline" size="icon-sm" onClick={() => redo('expenses')} disabled={!canRedo('expenses')}><Redo2 className="size-4" /></Button>
-            <Button variant="outline" size="sm" onClick={clearAll} disabled={expenses.length === 0}>Clear All</Button>
+            {expenses.length > 0 && <Button variant="outline" size="sm" onClick={clearAll} >Clear All</Button>}
           </div>
         </div>
 
@@ -150,7 +150,7 @@ export function ExpensesPanel() {
                           </TooltipProvider>
                         </div>
                       </TableCell>
-                      <TableCell>{row.receipt}</TableCell>
+                      <TableCell>{row.receipt || '-'}</TableCell>
                       <TableCell className="w-32 max-w-32">
                         <TooltipProvider delayDuration={300}>
                           <Tooltip>
@@ -225,7 +225,7 @@ export function ExpensesPanel() {
           />
 
           {/* Row 5: Amount */}
-          <FloatingInput label="Amount" inputMode="decimal" value={draft.amount} onChange={(e) => setDraft((prev) => ({ ...prev, amount: e.target.value }))} />
+          <FloatingNumberInput label="Amount" inputMode="decimal" value={draft.amount} onChange={(e) => setDraft((prev) => ({ ...prev, amount: e.target.value }))} />
 
           <div className="grid grid-cols-3 gap-2 pt-1">
             <Button onClick={onSave}>{editingId ? 'Update' : 'Save'}</Button>

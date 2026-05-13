@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Pencil, Trash2, Undo2, Redo2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { FloatingInput, FloatingSelect } from '@/components/ui/floating-field'
+import { FloatingInput, FloatingSelect, FloatingNumberInput } from '@/components/ui/floating-field'
 import {
   Table,
   TableBody,
@@ -220,20 +220,20 @@ export function PaymentsPanel() {
               <TableBody>
                 {payments.map((row: PaymentEntry) => (
                   <TableRow key={row.id}>
-                    <TableCell>{row.finance}</TableCell>
-                    <TableCell>{row.type}</TableCell>
-                    <TableCell>{row.terms}</TableCell>
-                    <TableCell>{row.date}</TableCell>
-                    <TableCell>{row.accountName}</TableCell>
+                    <TableCell>{row.finance || '-'}</TableCell>
+                    <TableCell>{row.type || '-'}</TableCell>
+                    <TableCell>{row.terms || '-'}</TableCell>
+                    <TableCell>{row.date || '-'}</TableCell>
+                    <TableCell>{row.accountName || '-'}</TableCell>
                     <TableCell>{row.qty}</TableCell>
-                    <TableCell>{row.item}</TableCell>
+                    <TableCell>{row.item || '-'}</TableCell>
                     <TableCell>{formatCurrency(row.unitPrice)}</TableCell>
                     <TableCell>{formatCurrency(row.grandTotal)}</TableCell>
                     <TableCell>{formatCurrency(row.down)}</TableCell>
                     <TableCell>{formatCurrency(row.balance)}</TableCell>
-                    <TableCell>{row.cr}</TableCell>
+                    <TableCell>{row.cr || '-'}</TableCell>
                     <TableCell>{formatCurrency(row.lateFee)}</TableCell>
-                    <TableCell>{row.paymentMethod}</TableCell>
+                    <TableCell>{row.paymentMethod || '-'}</TableCell>
                     <TableCell className="max-w-[150px] truncate">
                       {row.notes}
                     </TableCell>
@@ -344,7 +344,7 @@ export function PaymentsPanel() {
 
             <FloatingInput 
               label="Date"
-              className="w-full  col-span-2"
+              containerClassName="w-full  col-span-2"
               type="date" 
               value={draft.date}
               onChange={(e) => setDraft(p => ({ ...p, date: e.target.value }))} 
@@ -357,32 +357,32 @@ export function PaymentsPanel() {
 
           {/* Row 4: Qty, Item */}
           <div className="grid grid-cols-4 gap-2">
-            <FloatingInput label="Qty" className='col-span-1' value={draft.qty}
+            <FloatingInput label="Qty" containerClassName="col-span-1" value={draft.qty}
               onChange={(e) => setDraft(p => ({ ...p, qty: e.target.value }))}
               disabled={isPaymentType} />
 
-            <FloatingInput label="Item" className="col-span-3" value={draft.item}
+            <FloatingInput label="Item" containerClassName="col-span-3" value={draft.item}
               onChange={(e) => setDraft(p => ({ ...p, item: e.target.value }))}
               disabled={isPaymentType} />
           </div>
 
           {/* Row 5: Unit Price, Grand Total */}
           <div className="grid grid-cols-2 gap-2">
-            <FloatingInput label="Unit Price" value={draft.unitPrice}
+            <FloatingNumberInput label="Unit Price" value={draft.unitPrice}
               onChange={(e) => setDraft(p => ({ ...p, unitPrice: e.target.value }))}
               disabled={isPaymentType} />
 
-            <FloatingInput label="Grand Total" value={draft.grandTotal}
+            <FloatingNumberInput label="Grand Total" value={draft.grandTotal}
               onChange={(e) => setDraft(p => ({ ...p, grandTotal: e.target.value }))}
               disabled={isPaymentType} />
           </div>
 
           {/* Row 6: Down Payment, Balance */}
           <div className="grid grid-cols-2 gap-2">
-            <FloatingInput label="Down Payment" value={draft.down}
+            <FloatingNumberInput label="Down Payment" value={draft.down}
               onChange={(e) => setDraft(p => ({ ...p, down: e.target.value }))} />
 
-            <FloatingInput label="Balance" value={draft.balance}
+            <FloatingNumberInput label="Balance" value={draft.balance}
               onChange={(e) => setDraft(p => ({ ...p, balance: e.target.value }))} />
           </div>
 
@@ -391,7 +391,7 @@ export function PaymentsPanel() {
             <FloatingInput label="CR#" value={draft.cr}
               onChange={(e) => setDraft(p => ({ ...p, cr: e.target.value }))} />
 
-            <FloatingInput label="Late Fee" value={draft.lateFee}
+            <FloatingNumberInput label="Late Fee" value={draft.lateFee}
               onChange={(e) => setDraft(p => ({ ...p, lateFee: e.target.value }))}
               disabled={!isPaymentType} />
 

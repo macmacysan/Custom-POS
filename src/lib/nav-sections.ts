@@ -10,6 +10,7 @@ export const SECTION_LABELS: Record<NavSection, string> = {
 
 export const SECTION_TABS: Record<NavSection, { id: PosTab; label: string }[]> = {
   inventory: [
+    { id: 'items', label: 'Items' },
     { id: 'expenses', label: 'Expenses' },
     { id: 'checks', label: 'Checks' },
   ],
@@ -25,6 +26,7 @@ export const SECTION_TABS: Record<NavSection, { id: PosTab; label: string }[]> =
 }
 
 const TAB_TO_SECTION: Record<PosTab, NavSection> = {
+  items: 'inventory',
   expenses: 'inventory',
   checks: 'inventory',
   dashboard: 'sales',

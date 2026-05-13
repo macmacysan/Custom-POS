@@ -1,4 +1,4 @@
-﻿export type PosTab = 'dashboard' | 'expenses' | 'checks' | 'income' | 'payments' | 'installment' | 'financing'
+export type PosTab = 'dashboard' | 'items' | 'expenses' | 'checks' | 'income' | 'payments' | 'installment' | 'financing'
 
 export type NavSection = 'inventory' | 'sales' | 'reports'
 
@@ -75,6 +75,26 @@ export type InstallmentEntry = {
   agent: string
   ref: string
   added: string
+}
+
+export type FinancingEntry = {
+  id: string
+  financeProvider: FinanceType
+  applicantName: string
+  contactNumber: string
+  item: string
+  loanAmount: number
+  termMonths: number
+  status: 'Pending' | 'Approved' | 'Declined'
+  dateApplied: string
+}
+
+export type InventoryItem = {
+  id: string
+  sku: string
+  name: string
+  stock: number
+  price: number
 }
 
 export type AppSettings = {

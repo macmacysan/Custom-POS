@@ -12,6 +12,7 @@ import {
   ChevronsUpDown,
   Store,
   Wallet,
+  Boxes,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -35,6 +36,7 @@ const sectionIcons: Record<NavSection, typeof Package> = {
 
 const tabIcons: Record<PosTab, typeof LayoutDashboard> = {
   dashboard: LayoutDashboard,
+  items: Boxes,
   expenses: Receipt,
   checks: Landmark,
   income: Wallet,

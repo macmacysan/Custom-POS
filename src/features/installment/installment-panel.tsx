@@ -109,7 +109,7 @@ export function InstallmentPanel() {
         <div className="grid grid-cols-3 gap-2">
           <Button onClick={onSave}>{editingId ? 'Update' : 'Save'}</Button>
           <Button variant="outline" onClick={reset}>Cancel</Button>
-          <Button variant="destructive" disabled={!editingId} onClick={() => editingId && onDelete(editingId)}>Delete</Button>
+          {editingId && <Button variant="destructive"  onClick={() => editingId && onDelete(editingId)}>Delete</Button>}
         </div>
       </section>
     </div>

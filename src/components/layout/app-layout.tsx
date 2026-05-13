@@ -1,4 +1,4 @@
-﻿
+
 import { X } from 'lucide-react'
 
 import { TopNav } from '@/components/layout/top-nav'
@@ -42,13 +42,15 @@ function MobileSidebarSheet() {
 
 export function AppLayout() {
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
-      <WorkspaceNavigationSidebar className="hidden w-64 shrink-0 border-r border-sidebar-border lg:flex" />
+    <div className="flex h-screen w-full overflow-hidden bg-background bg-gradient-to-br from-background via-background to-muted/30">
+      <WorkspaceNavigationSidebar className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar/80 backdrop-blur-xl lg:flex" />
       <MasterCalculationsSidebar />
-      <div className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-background/50 backdrop-blur-sm">
         <TopNav />
-        <main className="flex-1 overflow-hidden">
-          <WorkspaceTabs />
+        <main className="flex-1 overflow-hidden p-2">
+          <div className="h-full rounded-xl border border-border/50 bg-card/50 backdrop-blur-md shadow-sm overflow-hidden flex flex-col">
+            <WorkspaceTabs />
+          </div>
         </main>
       </div>
       <MobileSidebarSheet />

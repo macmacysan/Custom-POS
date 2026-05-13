@@ -1,8 +1,7 @@
 ﻿import * as React from 'react'
 import { Pencil, Trash2, GripVertical, Undo2, Redo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { DatePicker } from '@/components/ui/date-picker'
-import { FloatingInput, FloatingSelect } from '@/components/ui/floating-field'
+import { FloatingInput, FloatingSelect, FloatingNumberInput, FloatingDatePicker } from '@/components/ui/floating-field'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { usePosStore } from '@/state/pos-store'
@@ -30,9 +29,9 @@ export function IncomePanel() {
     const entry: IncomeEntry = {
       id: editingId ?? Date.now().toString(),
       particular: draft.particular,
-      remarks: draft.remarks || '—',
-      receipt: draft.receipt || '—',
-      date: draft.date || '—',
+      remarks: draft.remarks,
+      receipt: draft.receipt,
+      date: draft.date,
       amount,
     }
     setIncome((prev) => editingId ? prev.map((x) => (x.id === editingId ? entry : x)) : [...prev, entry])
@@ -47,7 +46,7 @@ export function IncomePanel() {
 
   function onEdit(item: IncomeEntry) {
     setEditingId(item.id)
-    setDraft({ particular: item.particular, remarks: item.remarks, receipt: item.receipt, date: item.date === '—' ? '' : item.date, amount: String(item.amount) })
+    setDraft({ particular: item.particular, remarks: item.remarks, receipt: item.receipt, date: item.date, amount: String(item.amount) })
   }
 
   function onDrop(particular: IncomeType, id: string) {
@@ -108,8 +107,8 @@ export function IncomePanel() {
                           </Tooltip>
                         </TooltipProvider>
                       </TableCell>
-                      <TableCell>{row.receipt}</TableCell>
-                      <TableCell>{row.date}</TableCell>
+                      <TableCell>{row.receipt || '-'}</TableCell>
+                      <TableCell>{row.date || '-'}</TableCell>
                       <TableCell className="text-right tabular-nums">
                         <div className="flex items-center justify-end gap-2">
                           <span>{formatCurrency(row.amount)}</span>
@@ -145,23 +144,21 @@ export function IncomePanel() {
         <div className="grid grid-cols-6 gap-2">
           <FloatingInput 
             label="Receipt/Reference"
-            className="col-span-3" 
+            containerClassName="col-span-3" 
             value={draft.receipt} 
             onChange={(e) => setDraft((s) => ({ ...s, receipt: e.target.value }))} 
           />
-          <div className="col-span-3 w-full">
-            <DatePicker 
+          <FloatingDatePicker label="Date" containerClassName="col-span-3 w-full" 
               value={draft.date} 
               onChange={(date) => setDraft((s) => ({ ...s, date }))} 
               placeholder="yyyy/mm/dd" 
             />
-          </div>
         </div>
-        <FloatingInput label="Amount" inputMode="decimal" value={draft.amount} onChange={(e) => setDraft((s) => ({ ...s, amount: e.target.value }))} />
+        <FloatingNumberInput label="Amount" inputMode="decimal" value={draft.amount} onChange={(e) => setDraft((s) => ({ ...s, amount: e.target.value }))} />
         <div className="grid grid-cols-3 gap-2">
           <Button onClick={onSave}>{editingId ? 'Update' : 'Save'}</Button>
           <Button variant="outline" onClick={reset}>Cancel</Button>
-          <Button variant="destructive" disabled={!editingId} onClick={() => editingId && onDelete(editingId)}>Delete</Button>
+          {editingId && <Button variant="destructive"  onClick={() => editingId && onDelete(editingId)}>Delete</Button>}
         </div>
       </section>
     </div>
