@@ -13,7 +13,10 @@ import {
 } from '@/state/seed'
 import { firstTabInSection, sectionForTab } from '@/lib/nav-sections'
 import type {
+  AuthAccount,
+  AuthSessionUser,
   AppSettings,
+  BranchName,
   CheckEntry,
   ExpenseEntry,
   FinancingEntry,
@@ -34,6 +37,12 @@ type DatasetKey = 'expenses' | 'checks' | 'income' | 'payments' | 'financing' | 
 export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error' | 'offline'
 
 type PosStoreValue = {
+  authAccounts: AuthAccount[]
+  currentUser: AuthSessionUser | null
+  selectedBranch: BranchName | null
+  login: (username: string, password: string, branch: BranchName) => { ok: boolean; error?: string }
+  createAccount: (username: string, password: string) => { ok: boolean; error?: string }
+  logout: () => void
   syncStatus: SyncStatus
   setSyncStatus: React.Dispatch<React.SetStateAction<SyncStatus>>
   syncError: string | null
@@ -92,6 +101,10 @@ function loadSavedState<T>(key: string, fallback: T): T {
 }
 
 export function PosStoreProvider({ children }: { children: React.ReactNode }) {
+  const [authAccounts, setAuthAccounts] = React.useState<AuthAccount[]>(() => loadSavedState('authAccounts', []))
+  const [currentUser, setCurrentUser] = React.useState<AuthSessionUser | null>(() => loadSavedState('currentUser', null))
+  const [selectedBranch, setSelectedBranch] = React.useState<BranchName | null>(() => loadSavedState('selectedBranch', null))
+
   const [activeTab, setActiveTab] = React.useState<PosTab>(initialTab)
   const [currentDate, setCurrentDate] = React.useState(new Date())
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false)
@@ -136,6 +149,9 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     const toSave = {
+      authAccounts,
+      currentUser,
+      selectedBranch,
       settings,
       expenses,
       checks,
@@ -147,7 +163,41 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
       sidebar,
     }
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(toSave))
-  }, [settings, expenses, checks, income, payments, financing, inventoryItems, installments, sidebar])
+  }, [authAccounts, currentUser, selectedBranch, settings, expenses, checks, income, payments, financing, inventoryItems, installments, sidebar])
+
+  const createAccount = React.useCallback((username: string, password: string) => {
+    const normalizedUsername = username.trim().toLowerCase()
+    if (!normalizedUsername) return { ok: false, error: 'Username is required.' }
+    if (password.trim().length < 4) return { ok: false, error: 'Password must be at least 4 characters.' }
+
+    const exists = authAccounts.some((account) => account.username.toLowerCase() === normalizedUsername)
+    if (exists) return { ok: false, error: 'Username already exists.' }
+
+    const newAccount: AuthAccount = {
+      id: crypto.randomUUID(),
+      username: username.trim(),
+      password,
+      createdAt: new Date().toISOString(),
+    }
+
+    setAuthAccounts((prev) => [...prev, newAccount])
+    return { ok: true }
+  }, [authAccounts])
+
+  const login = React.useCallback((username: string, password: string, branch: BranchName) => {
+    const found = authAccounts.find((account) => account.username.toLowerCase() === username.trim().toLowerCase())
+    if (!found) return { ok: false, error: 'Account not found.' }
+    if (found.password !== password) return { ok: false, error: 'Invalid password.' }
+
+    setCurrentUser({ id: found.id, username: found.username })
+    setSelectedBranch(branch)
+    return { ok: true }
+  }, [authAccounts])
+
+  const logout = React.useCallback(() => {
+    setCurrentUser(null)
+    setSelectedBranch(null)
+  }, [])
 
   const goToToday = React.useCallback(() => setCurrentDate(new Date()), [])
 
@@ -245,6 +295,12 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
   const value = React.useMemo<PosStoreValue>(
     () => ({
       syncStatus,
+      authAccounts,
+      currentUser,
+      selectedBranch,
+      login,
+      createAccount,
+      logout,
       setSyncStatus,
       syncError,
       setSyncError,
@@ -286,6 +342,12 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
       updateDenomination,
     }),
     [
+      authAccounts,
+      currentUser,
+      selectedBranch,
+      login,
+      createAccount,
+      logout,
       syncStatus,
       syncError,
       lastSyncTime,
@@ -324,4 +386,5 @@ export function usePosStore() {
   if (!ctx) throw new Error('usePosStore must be used inside PosStoreProvider')
   return ctx
 }
+
 

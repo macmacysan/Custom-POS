@@ -4,6 +4,7 @@ import { useTheme } from 'next-themes'
 import { AppLayout } from '@/components/layout/app-layout'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { PosStoreProvider, usePosStore } from '@/state/pos-store'
+import { AuthScreen } from '@/features/auth/auth-screen'
 import { WORKSPACE_TAB_HOTKEYS, TAB_UNDO_DATASET } from '@/lib/nav-sections'
 import { dispatchOpenShortcutGuide, dispatchOpenSettings } from '@/lib/app-hotkeys'
 import { isTextEntryElement } from '@/lib/keyboard-hints'
@@ -125,6 +126,12 @@ function KeyboardShortcuts() {
 }
 
 function AppContent() {
+  const { currentUser } = usePosStore()
+
+  if (!currentUser) {
+    return <AuthScreen />
+  }
+
   return (
     <TooltipProvider delayDuration={350}>
       <KeyboardShortcuts />
@@ -136,7 +143,7 @@ function AppContent() {
 function App() {
   return (
     <PosStoreProvider>
-      <div className="h-screen w-full overflow-hidden">
+      <div className="w-full h-screen overflow-hidden">
         <AppContent />
       </div>
     </PosStoreProvider>

@@ -13,6 +13,9 @@ import {
   Store,
   Wallet,
   Boxes,
+  LogOut,
+  SlidersHorizontal,
+  UserCog,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ActionTooltip } from "@/components/ui/action-tooltip"
@@ -29,7 +32,15 @@ import {
 import { usePosStore } from "@/state/pos-store"
 import type { NavSection, PosTab } from "@/types/pos"
 import { kb } from "@/lib/keyboard-hints"
-
+import { dispatchOpenSettings, dispatchOpenShortcutGuide } from "@/lib/app-hotkeys"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 const sectionIcons: Record<NavSection, typeof Package> = {
   inventory: Package,
   sales: Store,
@@ -54,8 +65,18 @@ export function WorkspaceNavigationSidebar({
   className?: string
   onTabSelect?: () => void
 }) {
-  const { activeTab, setActiveTab, setActiveSection } = usePosStore()
+  const {
+    activeTab,
+    setActiveTab,
+    setActiveSection,
+    currentUser,
+    selectedBranch,
+    logout,
+    syncStatus,
+  } = usePosStore()
   const activeSection = sectionForTab(activeTab)
+  const hour = new Date().getHours()
+  const dayGreeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
 
   return (
     <aside className={cn("flex min-h-0 flex-col bg-sidebar text-sidebar-foreground", className)}>
@@ -69,7 +90,7 @@ export function WorkspaceNavigationSidebar({
         </div>
         <div className="flex-1 min-w-0 leading-tight">
           <p className="text-xs font-semibold tracking-tight truncate text-sidebar-foreground">
-            Custom POS
+            Cashiers Report
           </p>
           <p className="truncate text-[10px] text-muted-foreground">Nueva Camsur Home Furnishing</p>
         </div>
@@ -80,7 +101,6 @@ export function WorkspaceNavigationSidebar({
           <ChevronsUpDown className="size-3.5" />
         </span>
       </div>
-
       <ScrollArea className="flex-1 min-h-0">
         <div className="px-1.5 py-2">
           {/* ── Section label ── */}
@@ -165,6 +185,53 @@ export function WorkspaceNavigationSidebar({
           </div>
         </div>
       </ScrollArea>
+
+      <div className="p-2 border-t shrink-0 border-sidebar-border">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-9 w-full justify-between rounded-md border border-sidebar-border bg-muted/20 px-2.5 hover:bg-muted/30"
+            >
+              <span className="flex items-center min-w-0 gap-2">
+                <span className={`size-2 shrink-0 rounded-full ${
+                  syncStatus === 'success' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' :
+                  syncStatus === 'syncing' ? 'bg-blue-500 animate-pulse' :
+                  syncStatus === 'error' ? 'bg-red-500' :
+                  syncStatus === 'offline' ? 'bg-yellow-500' :
+                  'bg-muted-foreground'
+                }`} />
+                <span className="text-xs font-semibold shrink-0">{currentUser?.username ?? 'User'}</span>
+                <span className="rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  {selectedBranch ?? 'Goa'}
+                </span>
+              </span>
+              <ChevronDown className="size-3.5 text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64 border-border bg-popover">
+            <DropdownMenuLabel className="space-y-0.5">
+              <p className="text-sm font-semibold">{dayGreeting}, {currentUser?.username ?? 'User'}!</p>
+              <p className="text-[11px] font-normal text-muted-foreground">Current: {selectedBranch ?? 'Goa'} Branch</p>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={dispatchOpenShortcutGuide}>
+              <UserCog className="size-4" />
+              Account Settings
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={dispatchOpenSettings}>
+              <SlidersHorizontal className="size-4" />
+              App Settings
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={logout} className="text-red-500 focus:text-red-500">
+              <LogOut className="size-4" />
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </aside>
   )
 }

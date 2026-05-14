@@ -1,5 +1,8 @@
 export type PosTab = 'dashboard' | 'items' | 'expenses' | 'checks' | 'income' | 'payments' | 'installment' | 'financing'
 
+export const BRANCH_OPTIONS = ['Goa', 'Lagonoy', 'Tigaon', 'Tinambac'] as const
+export type BranchName = (typeof BRANCH_OPTIONS)[number]
+
 export type NavSection = 'inventory' | 'sales' | 'reports'
 
 export type ExpenseType = 'Company Expenses' | 'Purchases' | 'Drawings'
@@ -123,4 +126,17 @@ export type SidebarState = {
   denominationQuantities: Record<string, number>
   deductions: Record<string, number>
 }
+
+export type AuthAccount = {
+  id: string
+  username: string
+  password: string
+  createdAt: string
+}
+
+export type AuthSessionUser = {
+  id: string
+  username: string
+}
+
 
