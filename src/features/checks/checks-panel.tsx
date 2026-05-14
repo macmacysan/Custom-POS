@@ -128,7 +128,7 @@ export function ChecksPanel() {
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1.5 border-b">
           <div className="flex items-center gap-2">
-            <h2 className="text-xs font-medium tracking-tight">Check Payments</h2>
+            <h2 className="text-sm font-semibold tracking-tight">Check Payments</h2>
           </div>
           <div className="flex items-center gap-0.5">
             {canUndo('checks') && (
@@ -184,11 +184,11 @@ export function ChecksPanel() {
           <Table>
             <TableHeader>
               <TableRow className="border-b-2 hover:bg-transparent border-border/60">
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-3">Bank/Branch</TableHead>
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Account</TableHead>
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Ref No.</TableHead>
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Date</TableHead>
-                <TableHead className="text-right h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Amount</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-3">Bank/Branch</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Account</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Ref No.</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Date</TableHead>
+                <TableHead className="text-right h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Amount</TableHead>
                 <TableHead className="w-10"></TableHead>
               </TableRow>
             </TableHeader>
@@ -263,7 +263,7 @@ export function ChecksPanel() {
 
                       {/* Actions */}
                       <TableCell className="w-12 px-0 py-0">
-                        <div className="flex items-center justify-end gap-px transition-opacity opacity-0 group-hover:opacity-100 pr-2">
+                        <div className="flex items-center justify-end gap-px pr-2 transition-opacity opacity-0 group-hover:opacity-100">
                           <Button
                             variant="ghost"
                             size="icon-xs"
@@ -315,8 +315,8 @@ export function ChecksPanel() {
               </span>
             ))}
             <span className="ml-auto flex items-center gap-1.5 text-[10px]">
-              <span className="text-muted-foreground font-semibold">Total</span>
-              <span className="font-bold tabular-nums text-xs">
+              <span className="font-semibold text-muted-foreground">Total</span>
+              <span className="text-xs font-bold tabular-nums">
                 {formatCurrency(checks.reduce((sum, c) => sum + c.amount, 0))}
               </span>
             </span>
@@ -431,6 +431,7 @@ export function ChecksPanel() {
     </div>
   )
 }
+
 
 
 

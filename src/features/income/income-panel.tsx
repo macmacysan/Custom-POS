@@ -100,7 +100,7 @@ export function IncomePanel() {
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1.5 border-b">
           <div className="flex items-center gap-2">
-            <h2 className="text-xs font-medium tracking-tight">Other Income</h2>
+            <h2 className="text-sm font-semibold tracking-tight">Other Income</h2>
           </div>
           <div className="flex items-center gap-0.5">
             {canUndo('income') && (
@@ -156,10 +156,10 @@ export function IncomePanel() {
           <Table>
             <TableHeader>
               <TableRow className="border-b-2 hover:bg-transparent border-border/60">
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-8">Particular / Remarks</TableHead>
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Receipt</TableHead>
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Date</TableHead>
-                <TableHead className="text-right h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pr-0">Amount</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-8">Particular / Remarks</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Receipt</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Date</TableHead>
+                <TableHead className="text-right h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 pr-0">Amount</TableHead>
                 <TableHead className="w-10"></TableHead>
               </TableRow>
             </TableHeader>
@@ -214,7 +214,7 @@ export function IncomePanel() {
                       onDragStart={(e) => e.dataTransfer.setData('text/plain', row.id)}
                     >
                       {/* Particular & Remarks */}
-                      <TableCell className="py-0 pl-3 text-xs w-64 max-w-64">
+                      <TableCell className="w-64 py-0 pl-3 text-xs max-w-64">
                         <div className="flex items-center gap-1.5">
                           <GripVertical className="shrink-0 size-3 text-muted-foreground/25 cursor-grab active:cursor-grabbing" />
                           <TooltipProvider delayDuration={300}>
@@ -411,6 +411,7 @@ export function IncomePanel() {
     </div>
   )
 }
+
 
 
 

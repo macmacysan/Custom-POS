@@ -163,7 +163,7 @@ export function FinancingPanel() {
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1.5 border-b">
           <div className="flex items-center gap-2">
-            <h2 className="text-xs font-medium tracking-tight">Financing Applications</h2>
+            <h2 className="text-sm font-semibold tracking-tight">Financing Applications</h2>
           </div>
           <div className="flex items-center gap-0.5">
             {canUndo('financing') && (
@@ -215,13 +215,13 @@ export function FinancingPanel() {
           <Table>
             <TableHeader>
               <TableRow className="border-b-2 hover:bg-transparent border-border/60">
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-3">Date Applied</TableHead>
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Applicant</TableHead>
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Contact</TableHead>
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Item</TableHead>
-                <TableHead className="text-right h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Loan Amt</TableHead>
-                <TableHead className="text-center h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Terms</TableHead>
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Status</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-3">Date Applied</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Applicant</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Contact</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Item</TableHead>
+                <TableHead className="text-right h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Loan Amt</TableHead>
+                <TableHead className="text-center h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Terms</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Status</TableHead>
                 <TableHead className="w-10"></TableHead>
               </TableRow>
             </TableHeader>
@@ -240,7 +240,7 @@ export function FinancingPanel() {
                   <TableRow className={cn('hover:bg-transparent border-none', accent.header)}>
                     <TableCell colSpan={4} className="py-1 pl-3">
                       <div className="flex items-center gap-2">
-                        <span className={cn('text-[9px] font-bold uppercase tracking-widest px-1.5 py-px rounded-sm', accent.badge)}>
+                          <span className={cn('text-[10px] font-bold uppercase tracking-widest px-1.5 py-px rounded-sm', accent.badge)}>
                           {finance}
                         </span>
                         <span className="text-[9px] text-muted-foreground/50 tabular-nums">
@@ -290,12 +290,12 @@ export function FinancingPanel() {
                       <TableCell className="py-0">
                         <span
                           className={cn(
-                            'inline-flex items-center px-1.5 py-px rounded-full text-[9px] font-bold uppercase tracking-tighter border',
+                            'inline-flex items-center px-2 py-px rounded-sm text-[10px] font-bold uppercase tracking-wider border border-transparent',
                             row.status === 'Approved'
                               ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400'
                               : row.status === 'Declined'
-                              ? 'bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400'
-                              : 'bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400',
+                                ? 'bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400'
+                                : 'bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400',
                           )}
                         >
                           {row.status}
@@ -304,7 +304,7 @@ export function FinancingPanel() {
 
                       {/* Actions */}
                       <TableCell className="w-12 px-0 py-0">
-                        <div className="flex items-center justify-end gap-px transition-opacity opacity-0 group-hover:opacity-100 pr-2">
+                        <div className="flex items-center justify-end gap-px pr-2 transition-opacity opacity-0 group-hover:opacity-100">
                           <Button
                             variant="ghost"
                             size="icon-xs"
@@ -386,7 +386,7 @@ export function FinancingPanel() {
           ) : (
             <PlusCircle className="size-3 text-muted-foreground/50 shrink-0" />
           )}
-          <h3 className={cn('text-xs font-semibold', editingId ? 'text-primary' : 'text-muted-foreground')}>
+          <h3 className={cn('text-sm font-semibold', editingId ? 'text-primary' : 'text-muted-foreground')}>
             {editingId ? 'Editing Application' : 'New Application'}
           </h3>
         </div>
@@ -486,4 +486,6 @@ export function FinancingPanel() {
     </div>
   )
 }
+
+
 

@@ -101,7 +101,7 @@ export function InstallmentPanel() {
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1.5 border-b">
           <div className="flex items-center gap-2">
-            <h2 className="text-xs font-medium tracking-tight">Customer Database</h2>
+            <h2 className="text-sm font-semibold tracking-tight">Customer Database</h2>
           </div>
           <div className="flex items-center gap-1">
             <ActionTooltip label="Back to dashboard" shortcut={kb.cancel()}>
@@ -112,7 +112,7 @@ export function InstallmentPanel() {
                 onClick={() => setShowForm(false)}
                 className="h-6 px-2 text-[10px] text-muted-foreground hover:text-foreground"
               >
-                <ArrowLeft className="size-3 mr-1" />
+                <ArrowLeft className="mr-1 size-3" />
                 Back
               </Button>
             </ActionTooltip>
@@ -122,7 +122,7 @@ export function InstallmentPanel() {
         {/* Filters bar */}
         <div className="flex items-center gap-3 px-3 py-2 border-b bg-muted/5">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground/50" />
+            <Search className="absolute -translate-y-1/2 left-2 top-1/2 size-3 text-muted-foreground/50" />
             <FloatingInput
               label="Search name or contact"
               id="primary-input"
@@ -144,17 +144,17 @@ export function InstallmentPanel() {
           <Table>
             <TableHeader>
               <TableRow className="border-b-2 hover:bg-transparent border-border/60">
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-8">Name</TableHead>
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Location</TableHead>
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Contact</TableHead>
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Agent</TableHead>
-                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Added</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-8">Name</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Location</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Contact</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Agent</TableHead>
+                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Added</TableHead>
                 <TableHead className="w-10"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((item) => (
-                <TableRow key={item.id} className="group h-7 border-l-2 border-l-transparent transition-colors hover:border-l-primary">
+                <TableRow key={item.id} className="transition-colors border-l-2 group h-7 border-l-transparent hover:border-l-primary">
                   <TableCell className="py-0 pl-3">
                     <div className="flex items-center gap-1.5">
                       <GripVertical className="shrink-0 size-3 text-muted-foreground/25" />
@@ -174,7 +174,7 @@ export function InstallmentPanel() {
                     {item.added || '-'}
                   </TableCell>
                   <TableCell className="w-12 px-0 py-0 text-right">
-                    <div className="flex items-center justify-end gap-px transition-opacity opacity-0 group-hover:opacity-100 pr-2">
+                    <div className="flex items-center justify-end gap-px pr-2 transition-opacity opacity-0 group-hover:opacity-100">
                       <Button
                         variant="ghost"
                         size="icon-xs"
@@ -226,7 +226,7 @@ export function InstallmentPanel() {
           ) : (
             <PlusCircle className="size-3 text-muted-foreground/50 shrink-0" />
           )}
-          <h3 className={cn('text-xs font-semibold', editingId ? 'text-primary' : 'text-muted-foreground')}>
+          <h3 className={cn('text-sm font-semibold', editingId ? 'text-primary' : 'text-muted-foreground')}>
             {editingId ? 'Editing Customer' : 'New Customer'}
           </h3>
         </div>
@@ -307,7 +307,7 @@ export function InstallmentPanel() {
       </section>
     </div>
   ) : (
-    <section className="flex flex-col h-full bg-card overflow-hidden">
+    <section className="flex flex-col h-full overflow-hidden bg-card">
       <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/5">
         <div>
           <h2 className="text-sm font-semibold">Installment Overview</h2>
@@ -336,7 +336,7 @@ export function InstallmentPanel() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div className="flex-1 p-4 space-y-6 overflow-y-auto">
         <div className="grid gap-4 md:grid-cols-3">
           <Stat title="Due Today" value="5" sub="₱12,500.00 Expected" color="blue" />
           <Stat title="Past Due" value="12" sub="Requires follow-up" color="red" />
@@ -345,14 +345,14 @@ export function InstallmentPanel() {
 
         {/* Quick Search */}
         <div className="p-4 border rounded-lg bg-muted/10">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Quick Search</h3>
+          <h3 className="mb-3 text-xs font-semibold tracking-wider uppercase text-muted-foreground">Quick Search</h3>
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/40" />
+              <Search className="absolute -translate-y-1/2 left-3 top-1/2 size-4 text-muted-foreground/40" />
               <input
                 type="text"
                 placeholder="Search customers..."
-                className="w-full h-10 pl-10 pr-4 rounded-md border bg-background text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full h-10 pl-10 pr-4 text-sm border rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-primary"
                 onFocus={() => setShowForm(true)}
               />
             </div>
@@ -380,6 +380,7 @@ function Stat({ title, value, sub, color }: { title: string; value: string; sub:
     </div>
   )
 }
+
 
 
 

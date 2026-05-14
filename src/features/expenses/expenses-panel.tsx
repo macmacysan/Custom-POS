@@ -156,7 +156,7 @@ export function ExpensesPanel() {
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1.5 border-b">
           <div className="flex items-center gap-2">
-            <h2 className="text-xs font-medium tracking-tight">Expenses, Purchases & Drawings</h2>
+            <h2 className="text-sm font-semibold tracking-tight">Expenses, Purchases & Drawings</h2>
           </div>
           <div className="flex items-center gap-0.5">
             {canUndo('expenses') && (
@@ -397,7 +397,7 @@ export function ExpensesPanel() {
             ? <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
             : <PlusCircle className="size-3 text-muted-foreground/50 shrink-0" />
           }
-          <h3 className={cn('text-xs font-semibold', editingId ? 'text-primary' : 'text-muted-foreground')}>
+          <h3 className={cn('text-sm font-semibold', editingId ? 'text-primary' : 'text-muted-foreground')}>
             {editingId ? 'Editing Entry' : 'New Entry'}
           </h3>
         </div>

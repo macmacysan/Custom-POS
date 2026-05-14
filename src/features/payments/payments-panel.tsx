@@ -204,7 +204,7 @@ export function PaymentsPanel() {
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1.5 border-b">
           <div className="flex items-center gap-2">
-            <h2 className="text-xs font-medium tracking-tight">Payments Panel</h2>
+            <h2 className="text-sm font-semibold tracking-tight">Payments Panel</h2>
           </div>
           <div className="flex items-center gap-0.5">
             {canUndo('payments') && (
@@ -257,7 +257,7 @@ export function PaymentsPanel() {
             <Table>
               <TableHeader>
                 <TableRow className="border-b-2 hover:bg-transparent border-border/60">
-                  <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-3">Provider</TableHead>
+                  <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-3">Provider</TableHead>
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Type</TableHead>
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Terms</TableHead>
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Date</TableHead>
@@ -343,7 +343,7 @@ export function PaymentsPanel() {
 
                         {/* Actions */}
                         <TableCell className="w-12 px-0 py-0">
-                          <div className="flex items-center justify-end gap-px transition-opacity opacity-0 group-hover:opacity-100 pr-2">
+                          <div className="flex items-center justify-end gap-px pr-2 transition-opacity opacity-0 group-hover:opacity-100">
                             <Button
                               variant="ghost"
                               size="icon-xs"
@@ -397,8 +397,8 @@ export function PaymentsPanel() {
               )
             })}
             <span className="ml-auto flex items-center gap-1.5 text-[10px]">
-              <span className="text-muted-foreground font-semibold">Grand Total</span>
-              <span className="font-bold tabular-nums text-xs">
+              <span className="font-semibold text-muted-foreground">Grand Total</span>
+              <span className="text-xs font-bold tabular-nums">
                 {formatCurrency(payments.reduce((sum, p) => sum + p.grandTotal, 0))}
               </span>
             </span>
@@ -425,7 +425,7 @@ export function PaymentsPanel() {
           ) : (
             <PlusCircle className="size-3 text-muted-foreground/50 shrink-0" />
           )}
-          <h3 className={cn('text-xs font-semibold', editingId ? 'text-primary' : 'text-muted-foreground')}>
+          <h3 className={cn('text-sm font-semibold', editingId ? 'text-primary' : 'text-muted-foreground')}>
             {editingId ? 'Editing Payment' : 'New Payment'}
           </h3>
         </div>
@@ -599,4 +599,4 @@ export function PaymentsPanel() {
       </section>
     </div>
   )
-}
+}
