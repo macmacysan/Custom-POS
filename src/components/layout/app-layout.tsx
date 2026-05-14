@@ -14,8 +14,8 @@ function MobileSidebarSheet() {
 
   return (
     <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-      <SheetContent className="flex w-full max-w-sm flex-col gap-0 overflow-hidden p-0" showCloseButton={false}>
-        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3">
+      <SheetContent className="flex flex-col w-full max-w-sm gap-0 p-0 overflow-hidden" showCloseButton={false}>
+        <div className="flex items-start justify-between gap-3 px-4 py-3 border-b shrink-0 border-border">
           <div>
             <p className="text-sm font-semibold text-foreground">Menu</p>
             <p className="text-xs text-muted-foreground">Workspace, cashier totals, and date tools.</p>
@@ -28,7 +28,7 @@ function MobileSidebarSheet() {
         </div>
 
         <WorkspaceNavigationSidebar
-          className="min-h-0 flex-1 border-b border-border"
+          className="flex-1 min-h-0 border-b border-border"
           onTabSelect={() => setMobileSidebarOpen(false)}
         />
 
@@ -42,13 +42,13 @@ function MobileSidebarSheet() {
 
 export function AppLayout() {
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background bg-gradient-to-br from-background via-background to-muted/30">
-      <WorkspaceNavigationSidebar className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar/80 backdrop-blur-xl lg:flex" />
+    <div className="flex w-full h-screen overflow-hidden bg-background bg-gradient-to-br from-background via-background to-muted/30">
+      <WorkspaceNavigationSidebar className="hidden w-48 border-r shrink-0 border-sidebar-border bg-sidebar/80 backdrop-blur-xl lg:flex" />
       <MasterCalculationsSidebar />
-      <div className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-background/50 backdrop-blur-sm">
+      <div className="relative flex flex-col flex-1 h-full min-w-0 overflow-hidden bg-background/50 backdrop-blur-sm">
         <TopNav />
-        <main className="flex-1 overflow-hidden p-2">
-          <div className="h-full rounded-xl border border-border/50 bg-card/50 backdrop-blur-md shadow-sm overflow-hidden flex flex-col">
+        <main className="flex-1 overflow-hidden">
+          <div className="flex flex-col h-full overflow-hidden">
             <WorkspaceTabs />
           </div>
         </main>

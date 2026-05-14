@@ -173,195 +173,241 @@ export function ExpensesPanel() {
   }
 
   return (
-    <div className="grid h-full grid-cols-1 lg:grid-cols-[1fr_320px]">
-      <section className="flex min-h-0 flex-col overflow-hidden rounded-none bg-card">
-        <div className="flex items-center justify-between border-b p-3">
-          <h2 className="text-sm font-semibold">Expenses, Purchases & Drawings</h2>
-          <div className="flex items-center gap-2">
-            <ActionTooltip label="Undo" shortcut={kb.undo()}>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon-sm"
-                aria-label="Undo"
-                onClick={() => undo('expenses')}
-                disabled={!canUndo('expenses')}
-              >
-                <Undo2 className="size-4" />
-              </Button>
-            </ActionTooltip>
-            <ActionTooltip label="Redo" shortcut={kb.redo()}>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon-sm"
-                aria-label="Redo"
-                onClick={() => redo('expenses')}
-                disabled={!canRedo('expenses')}
-              >
-                <Redo2 className="size-4" />
-              </Button>
-            </ActionTooltip>
-            {expenses.length > 0 && (
-              <ActionTooltip label="Clear all rows from this tab">
-                <Button type="button" variant="outline" size="sm" onClick={clearAll}>
-                  Clear All
-                </Button>
-              </ActionTooltip>
-            )}
-          </div>
-        </div>
+<div className="grid h-full grid-cols-1 lg:grid-cols-[1fr_220px]">
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-60">Description</TableHead>
-                <TableHead>Receipt No.</TableHead>
-                <TableHead className="w-32">Category</TableHead>
-                {settings.showVatColumn ? <TableHead>VAT</TableHead> : null}
-                <TableHead className="text-right">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            {groups.map((type) => {
-              const rows = expenses.filter((item) => item.type === type)
-              if (rows.length === 0) return null
-              return (
-                <TableBody
-                  key={type}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    const id = e.dataTransfer.getData('text/plain')
-                    if (id) onDrop(type, id)
-                  }}
-                >
-                  <TableRow className="bg-muted/10">
-                    <TableCell colSpan={settings.showVatColumn ? 5 : 4} className="font-semibold">{type}</TableCell>
-                  </TableRow>
-                  {rows.map((row) => (
-                    <TableRow key={row.id} className="group" draggable onDragStart={(e) => e.dataTransfer.setData('text/plain', row.id)}>
-                      <TableCell className="w-[180px] max-w-[180px]">
-                        <div className="flex items-center">
-                          <GripVertical className="mr-2 shrink-0 size-3 text-muted-foreground" />
-                          <TooltipProvider delayDuration={300}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="truncate cursor-default block w-full text-left">{row.description}</span>
-                              </TooltipTrigger>
-                              <TooltipContent side="bottom" align="start" className="max-w-[300px] whitespace-normal break-words">
-                                {row.description}
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      </TableCell>
-                      <TableCell>{row.receipt || '-'}</TableCell>
-                      <TableCell className="w-32 max-w-32">
-                        <TooltipProvider delayDuration={300}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="truncate cursor-default block w-full text-left">{row.category}</span>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom" align="start" className="max-w-[300px] whitespace-normal break-words">
-                              {row.category}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                      {settings.showVatColumn ? <TableCell>{row.vat === 'Vat' ? 'VAT' : 'NON'}</TableCell> : null}
-                      <TableCell className="text-right tabular-nums">
-                        <div className="flex items-center justify-end gap-2">
-                          <span>{formatCurrency(row.amount)}</span>
-                          <span className="inline-flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                            <Button variant="ghost" size="icon-xs" onClick={() => onEdit(row)}><Pencil className="size-3" /></Button>
-                            <Button variant="ghost" size="icon-xs" onClick={() => onDelete(row.id)}><Trash2 className="size-3" /></Button>
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              )
-            })}
-          </Table>
-        </div>
+  {/* ── Main table section ── */}
+  <section className="flex flex-col min-h-0 overflow-hidden rounded-none bg-card">
 
-        <div className="flex flex-wrap items-center gap-4 border-t px-3 py-2 text-xs">
-          <span>Company: {formatCurrency(totals.company)}</span>
-          <span>Purchases: {formatCurrency(totals.purchases)}</span>
-          <span>Drawings: {formatCurrency(totals.drawings)}</span>
-          <span className="font-semibold">Total: {formatCurrency(totals.grand)}</span>
-        </div>
-      </section>
-
-      <section className="shrink-0 rounded-none border-l bg-muted/20 p-3">
-        <h3 className="mb-3 text-sm font-semibold">{editingId ? 'Edit Expense' : 'Add Expense'}</h3>
-        <div className="space-y-3">
-          
-          {/* Row 1: Company Expenses (Type) */}
-          <FloatingSelect
-            label="Type"
-            value={draft.type}
-            onValueChange={(v) => setDraft((prev) => ({ ...prev, type: v as ExpenseType }))}
-            options={groups.map((item) => ({ label: item, value: item }))}
-          />
-
-          {/* Row 2: Description */}
-          <FloatingInput
-            id="primary-input"
-            label="Description"
-            value={draft.description}
-            onChange={(e) => setDraft((prev) => ({ ...prev, description: e.target.value }))}
-          />
-
-          {/* Row 3: Receipt No. and VAT */}
-          <div className="grid grid-cols-[1fr_90px] gap-2">
-            <FloatingInput label="Receipt No." value={draft.receipt} onChange={(e) => setDraft((prev) => ({ ...prev, receipt: e.target.value }))} />
-            <FloatingSelect
-              label="VAT"
-              value={draft.vat}
-              onValueChange={(v) => setDraft((prev) => ({ ...prev, vat: v as VatType }))}
-              options={[{ label: 'VAT', value: 'Vat' }, { label: 'Non-VAT', value: 'Non-Vat' }]}
-            />
-          </div>
-
-          {/* Row 4: Category */}
-          <FloatingSelect
-            label="Category"
-            value={draft.category}
-            onValueChange={(v) => setDraft((prev) => ({ ...prev, category: v }))}
-            triggerClassName="[&>span]:truncate text-left"
-            options={expenseCategories.map((cat) => ({ label: cat, value: cat }))}
-          />
-
-          {/* Row 5: Amount */}
-          <FloatingNumberInput label="Amount" inputMode="decimal" value={draft.amount} onChange={(e) => setDraft((prev) => ({ ...prev, amount: e.target.value }))} />
-
-          <div className="grid grid-cols-3 gap-2 pt-1">
-            <ActionTooltip label={editingId ? 'Update row' : 'Save row'} shortcut={`${kb.save()} · ${kb.saveAlso()}`}>
-              <Button type="button" onClick={onSave}>
-                {editingId ? 'Update' : 'Save'}
-              </Button>
-            </ActionTooltip>
-            <ActionTooltip label="Cancel editing" shortcut={kb.cancel()}>
-              <Button type="button" variant="outline" onClick={reset}>
-                Cancel
-              </Button>
-            </ActionTooltip>
-            <ActionTooltip label="Delete current row" shortcut={kb.deleteRow()}>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => editingId && onDelete(editingId)}
-                disabled={!editingId}
-              >
-                Delete
-              </Button>
-            </ActionTooltip>
-          </div>
-        </div>
-      </section>
+    {/* Header */}
+    <div className="flex items-center justify-between px-3 py-1.5 border-b">
+      <h2 className="text-xs font-semibold">Expenses, Purchases & Drawings</h2>
+      <div className="flex items-center gap-1">
+        <ActionTooltip label="Undo" shortcut={kb.undo()}>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            aria-label="Undo"
+            onClick={() => undo('expenses')}
+            disabled={!canUndo('expenses')}
+          >
+            <Undo2 className="size-3.5" />
+          </Button>
+        </ActionTooltip>
+        <ActionTooltip label="Redo" shortcut={kb.redo()}>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            aria-label="Redo"
+            onClick={() => redo('expenses')}
+            disabled={!canRedo('expenses')}
+          >
+            <Redo2 className="size-3.5" />
+          </Button>
+        </ActionTooltip>
+        {expenses.length > 0 && (
+          <ActionTooltip label="Clear all rows from this tab">
+            <Button type="button" variant="outline" size="sm" onClick={clearAll} className="px-2 text-xs h-7">
+              Clear All
+            </Button>
+          </ActionTooltip>
+        )}
+      </div>
     </div>
+
+    {/* Table */}
+    <div className="flex-1 min-h-0 overflow-y-auto ">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-52 h-7 text-[10px]">Description</TableHead>
+            <TableHead className="h-7 text-[10px]">Receipt No.</TableHead>
+            <TableHead className="w-28 h-7 text-[10px]">Category</TableHead>
+            {settings.showVatColumn ? <TableHead className="h-7 text-[10px]">VAT</TableHead> : null}
+            <TableHead className="text-right h-7 text-[10px] pr-15">Amount</TableHead>
+          </TableRow>
+        </TableHeader>
+        {groups.map((type) => {
+          const rows = expenses.filter((item) => item.type === type)
+          if (rows.length === 0) return null
+          return (
+            <TableBody
+              key={type}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                const id = e.dataTransfer.getData('text/plain')
+                if (id) onDrop(type, id)
+              }}
+            >
+              {/* Group header */}
+              <TableRow className="h-5 text-blue-500 bg-muted/40">
+                <TableCell
+                  colSpan={settings.showVatColumn ? 5 : 4}
+                  className="py-0.5 text-[10px] font-semibold"
+                >
+                  {type}
+                </TableCell>
+              </TableRow>
+
+              {rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className="group h-7"
+                  draggable
+                  onDragStart={(e) => e.dataTransfer.setData('text/plain', row.id)}
+                >
+                  {/* Description */}
+                  <TableCell className="w-[180px] max-w-[180px] py-0 text-xs">
+                    <div className="flex items-center">
+                      <GripVertical className="mr-1.5 shrink-0 size-3 text-muted-foreground" />
+                      <TooltipProvider delayDuration={300}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="block w-full text-left truncate cursor-default">{row.description}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" align="start" className="max-w-[300px] whitespace-normal break-words">
+                            {row.description}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </TableCell>
+
+                  {/* Receipt */}
+                  <TableCell className="py-0 text-xs">{row.receipt || '-'}</TableCell>
+
+                  {/* Category */}
+                  <TableCell className="py-0 text-xs w-28 max-w-28">
+                    <TooltipProvider delayDuration={300}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="block w-full text-left truncate cursor-default">{row.category}</span>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" align="start" className="max-w-[300px] whitespace-normal break-words">
+                          {row.category}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableCell>
+
+                  {/* VAT */}
+                  {settings.showVatColumn
+                    ? <TableCell className="py-0 text-xs">{row.vat === 'Vat' ? 'VAT' : 'NON'}</TableCell>
+                    : null}
+
+                  {/* Amount + actions */}
+                  <TableCell className="py-0 text-xs text-right tabular-nums">
+                    <div className="flex items-center justify-end gap-1">
+                      <span>{formatCurrency(row.amount)}</span>
+                      <span className="inline-flex gap-0.5 transition-opacity opacity-0 group-hover:opacity-100">
+                        <Button variant="ghost" size="icon-xs" onClick={() => onEdit(row)}>
+                          <Pencil className="size-3" />
+                        </Button>
+                        <Button variant="ghost" size="icon-xs" onClick={() => onDelete(row.id)}>
+                          <Trash2 className="size-3" />
+                        </Button>
+                      </span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          )
+        })}
+      </Table>
+    </div>
+
+    {/* Footer totals */}
+    <div className="flex flex-wrap items-center gap-3 px-3 py-1 text-[10px] border-t text-muted-foreground">
+      <span>Company: <span className="font-medium text-foreground tabular-nums">{formatCurrency(totals.company)}</span></span>
+      <span>Purchases: <span className="font-medium text-foreground tabular-nums">{formatCurrency(totals.purchases)}</span></span>
+      <span>Drawings: <span className="font-medium text-foreground tabular-nums">{formatCurrency(totals.drawings)}</span></span>
+      <span className="font-semibold text-foreground">Total: {formatCurrency(totals.grand)}</span>
+    </div>
+  </section>
+
+  {/* ── Form panel ── */}
+  <section className="px-2.5 py-2 border-l rounded-none shrink-0 bg-muted/20">
+    <h3 className="mb-2 text-xs font-semibold">{editingId ? 'Edit Expense' : 'Add Expense'}</h3>
+    <div className="space-y-2">
+
+      {/* Type */}
+      <FloatingSelect
+        label="Type"
+        value={draft.type}
+        onValueChange={(v) => setDraft((prev) => ({ ...prev, type: v as ExpenseType }))}
+        options={groups.map((item) => ({ label: item, value: item }))}
+      />
+
+      {/* Description */}
+      <FloatingInput
+        id="primary-input"
+        label="Description"
+        value={draft.description}
+        onChange={(e) => setDraft((prev) => ({ ...prev, description: e.target.value }))}
+      />
+
+      {/* Receipt No. + VAT */}
+      <div className="grid grid-cols-[1fr_80px] gap-1.5">
+        <FloatingInput
+          label="Receipt No."
+          value={draft.receipt}
+          onChange={(e) => setDraft((prev) => ({ ...prev, receipt: e.target.value }))}
+        />
+        <FloatingSelect
+          label="VAT"
+          value={draft.vat}
+          onValueChange={(v) => setDraft((prev) => ({ ...prev, vat: v as VatType }))}
+          options={[{ label: 'VAT', value: 'Vat' }, { label: 'Non-VAT', value: 'Non-Vat' }]}
+        />
+      </div>
+
+      {/* Category */}
+      <FloatingSelect
+        label="Category"
+        value={draft.category}
+        onValueChange={(v) => setDraft((prev) => ({ ...prev, category: v }))}
+        triggerClassName="[&>span]:truncate text-left"
+        options={expenseCategories.map((cat) => ({ label: cat, value: cat }))}
+      />
+
+      {/* Amount */}
+      <FloatingNumberInput
+        label="Amount"
+        inputMode="decimal"
+        value={draft.amount}
+        onChange={(e) => setDraft((prev) => ({ ...prev, amount: e.target.value }))}
+      />
+
+      {/* Actions */}
+      <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+        <ActionTooltip label={editingId ? 'Update row' : 'Save row'} shortcut={`${kb.save()} · ${kb.saveAlso()}`}>
+          <Button type="button" onClick={onSave} className="text-xs h-7">
+            {editingId ? 'Update' : 'Save'}
+          </Button>
+        </ActionTooltip>
+        <ActionTooltip label="Cancel editing" shortcut={kb.cancel()}>
+          <Button type="button" variant="outline" onClick={reset} className="text-xs h-7">
+            Cancel
+          </Button>
+        </ActionTooltip>
+        <ActionTooltip label="Delete current row" shortcut={kb.deleteRow()}>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => editingId && onDelete(editingId)}
+            disabled={!editingId}
+            className="text-xs h-7"
+          >
+            Delete
+          </Button>
+        </ActionTooltip>
+      </div>
+    </div>
+  </section>
+
+</div>
   )
 }
 

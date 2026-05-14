@@ -14,7 +14,6 @@ import {
   Wallet,
   Boxes,
 } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { ActionTooltip } from "@/components/ui/action-tooltip"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -60,31 +59,36 @@ export function WorkspaceNavigationSidebar({
 
   return (
     <aside className={cn("flex min-h-0 flex-col bg-sidebar text-sidebar-foreground", className)}>
-      <div className="flex shrink-0 items-center gap-2 border-b border-sidebar-border px-3 py-3">
+      {/* ── Header: tighter padding, smaller logo badge ── */}
+      <div className="flex shrink-0 items-center gap-1.5 border-b border-sidebar-border px-2 py-2">
         <div
-          className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-foreground text-background shadow-sm"
+          className="flex items-center justify-center border rounded shadow-sm size-7 shrink-0 border-border bg-foreground text-background"
           aria-hidden
         >
-          <span className="text-[11px] font-black leading-none">POS</span>
+          <span className="text-[9px] font-black leading-none">POS</span>
         </div>
-        <div className="min-w-0 flex-1 leading-tight">
-          <p className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">Custom POS</p>
-          <p className="truncate text-[11px] text-muted-foreground">Nueva Camsur Home Furnishing</p>
+        <div className="flex-1 min-w-0 leading-tight">
+          <p className="text-xs font-semibold tracking-tight truncate text-sidebar-foreground">
+            Custom POS
+          </p>
+          <p className="truncate text-[10px] text-muted-foreground">Nueva Camsur Home Furnishing</p>
         </div>
         <span
-          className="flex size-7 shrink-0 items-center justify-center text-muted-foreground opacity-40"
+          className="flex items-center justify-center size-6 shrink-0 text-muted-foreground opacity-40"
           aria-hidden
         >
-          <ChevronsUpDown className="size-4" />
+          <ChevronsUpDown className="size-3.5" />
         </span>
       </div>
 
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="px-2 py-3">
-          <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="px-1.5 py-2">
+          {/* ── Section label ── */}
+          <p className="mb-1 px-2 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
             Workspace
           </p>
-          <div className="flex flex-col gap-0.5">
+
+          <div className="flex flex-col gap-px">
             {SECTION_ORDER.map((section) => {
               const SectionIcon = sectionIcons[section]
               const isActiveSection = activeSection === section
@@ -98,32 +102,36 @@ export function WorkspaceNavigationSidebar({
                     if (next && !isActiveSection) setActiveSection(section)
                   }}
                 >
+                  {/* ── Section trigger: h-7 instead of h-9 ── */}
                   <CollapsibleTrigger asChild>
                     <Button
                       type="button"
                       variant="ghost"
                       className={cn(
-                        "h-9 w-full justify-between gap-2 rounded-md px-2 font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                        "h-7 w-full justify-between gap-1.5 rounded px-2 text-xs font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                         isActiveSection && "bg-sidebar-accent/80 text-sidebar-accent-foreground",
                       )}
                     >
-                      <span className="flex min-w-0 items-center gap-2">
-                        <SectionIcon className="size-4 shrink-0 opacity-80" />
-                        <span className="truncate text-sm">{SECTION_LABELS[section]}</span>
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        <SectionIcon className="size-3.5 shrink-0 opacity-80" />
+                        <span className="truncate">{SECTION_LABELS[section]}</span>
                       </span>
                       {isActiveSection ? (
-                        <ChevronDown className="size-4 shrink-0 opacity-60" />
+                        <ChevronDown className="size-3 shrink-0 opacity-60" />
                       ) : (
-                        <ChevronRight className="size-4 shrink-0 opacity-60" />
+                        <ChevronRight className="size-3 shrink-0 opacity-60" />
                       )}
                     </Button>
                   </CollapsibleTrigger>
+
                   <CollapsibleContent>
-                    <div className="relative ml-3.5 border-l border-sidebar-border py-1 pl-3">
+                    {/* ── Tab list: tighter indent, smaller border ── */}
+                    <div className="relative ml-3 border-l border-sidebar-border py-0.5 pl-2.5">
                       {tabs.map((item) => {
                         const TabIcon = tabIcons[item.id]
                         const isActive = activeTab === item.id
                         const digit = workspaceTabHotkeyDigit(item.id)
+
                         return (
                           <ActionTooltip
                             key={item.id}
@@ -134,7 +142,7 @@ export function WorkspaceNavigationSidebar({
                               type="button"
                               variant="ghost"
                               className={cn(
-                                "mb-0.5 h-8 w-full justify-start gap-2 rounded-md px-2 text-sm font-normal text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                "mb-px h-6 w-full justify-start gap-1.5 rounded px-1.5 text-xs font-normal text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                                 isActive &&
                                   "bg-muted font-medium text-foreground shadow-none hover:bg-muted dark:bg-sidebar-accent dark:text-sidebar-accent-foreground",
                               )}
@@ -143,7 +151,7 @@ export function WorkspaceNavigationSidebar({
                                 onTabSelect?.()
                               }}
                             >
-                              <TabIcon className="size-3.5 shrink-0 opacity-70" />
+                              <TabIcon className="size-3 shrink-0 opacity-70" />
                               <span className="truncate">{item.label}</span>
                             </Button>
                           </ActionTooltip>
