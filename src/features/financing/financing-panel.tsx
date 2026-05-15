@@ -124,27 +124,38 @@ export function FinancingPanel() {
   }, [financing, currentDate])
 
   const syncToSheet = React.useCallback(async (overridePayload?: FinancingSheetRow[]) => {
-    if (typeof window !== 'undefined' && window.electronAPI) {
-      if (!navigator.onLine) { setSyncStatus('offline'); setSyncError('No internet connection'); return }
-      setSyncStatus('syncing'); setSyncError(null)
-      try {
-        const payload = overridePayload || formatForSheet()
-        addSyncLog('Financing', 'syncing', `Starting sync for ${payload.length} rows`)
-        const result = await window.electronAPI.syncToGSheet('Financing', payload)
-        
-        if (result.success) {
-          setSyncStatus('success'); setLastSyncTime(new Date())
-          addSyncLog('Financing', 'success', `Synced ${payload.length} rows successfully`, result)
-        } else {
-          throw new Error(result.error || 'Sync failed')
-        }
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err ?? 'Unknown error during sync')
-        setSyncStatus('error'); setSyncError(message)
-        addSyncLog('Financing', 'error', message)
-      }
+    const payload = overridePayload || formatForSheet()
+
+    if (typeof window === 'undefined' || !window.electronAPI) {
+      setSyncStatus('offline')
+      setSyncError('Sync API unavailable')
+      addSyncLog('Financing', 'offline', 'Electron sync API unavailable')
+      return
     }
-  }, [formatForSheet, setSyncStatus, setSyncError, setLastSyncTime])
+
+    setSyncStatus('syncing'); setSyncError(null)
+    try {
+      addSyncLog('Financing', 'syncing', `Starting sync for ${payload.length} rows`)
+      const result = await window.electronAPI.syncToGSheet('Financing', payload)
+
+      if (result.success) {
+        setSyncStatus('success'); setLastSyncTime(new Date())
+        addSyncLog('Financing', 'success', `Synced ${payload.length} rows successfully`, result)
+      } else {
+        const message = result.error || 'Sync failed'
+        const status = /offline|network|enotfound|econnrefused|not connected/i.test(message) ? 'offline' : 'error'
+        setSyncStatus(status)
+        setSyncError(message)
+        addSyncLog('Financing', status, message, result)
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err ?? 'Unknown error during sync')
+      const status = /offline|network|enotfound|econnrefused|not connected/i.test(message) ? 'offline' : 'error'
+      setSyncStatus(status)
+      setSyncError(message)
+      addSyncLog('Financing', status, message)
+    }
+  }, [formatForSheet, setSyncStatus, setSyncError, setLastSyncTime, addSyncLog])
 
   React.useEffect(() => {
     const timer = setInterval(() => syncToSheet(), 5 * 60 * 1000)

@@ -1,4 +1,4 @@
-import { BrowserWindow, app, ipcMain } from "electron";
+import { BrowserWindow, app, ipcMain, net } from "electron";
 import * as path from "path";
 import { fileURLToPath } from "url";
 //#region electron/main.ts
@@ -26,24 +26,45 @@ function createWindow() {
 }
 app.whenReady().then(() => {
 	createWindow();
+	async function postJsonToScript(url, payload) {
+		return new Promise((resolve, reject) => {
+			const request = net.request({
+				method: "POST",
+				url,
+				headers: { "Content-Type": "application/json" }
+			});
+			request.on("response", (response) => {
+				let responseBody = "";
+				response.on("data", (chunk) => {
+					responseBody += chunk.toString();
+				});
+				response.on("end", () => {
+					resolve({
+						status: response.statusCode ?? 0,
+						statusText: response.statusMessage ?? "",
+						body: responseBody
+					});
+				});
+				response.on("error", reject);
+			});
+			request.on("error", reject);
+			request.write(JSON.stringify(payload));
+			request.end();
+		});
+	}
 	ipcMain.handle("sync-to-gsheet", async (_event, { sheetName, data }) => {
 		console.log(`Syncing to Google Sheets: ${sheetName}, rows: ${data.length}`);
 		try {
-			const response = await fetch(GOOGLE_SCRIPT_URL, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					sheetName,
-					data
-				})
+			const response = await postJsonToScript(GOOGLE_SCRIPT_URL, {
+				sheetName,
+				data
 			});
 			console.log(`Response status: ${response.status} ${response.statusText}`);
-			const responseBody = await response.text();
-			console.log(`Response body: ${responseBody}`);
-			if (response.ok) return {
+			console.log(`Response body: ${response.body}`);
+			if (response.status >= 200 && response.status < 300) return {
 				success: true,
 				status: response.status,
-				data: responseBody
+				data: response.body
 			};
 			else throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
 		} catch (error) {
