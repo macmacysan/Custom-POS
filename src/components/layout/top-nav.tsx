@@ -58,7 +58,7 @@ export function TopNav() {
   const section = sectionForTab(activeTab)
   return (
     <>
-      <header className="sticky top-0 z-50 flex h-7 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <header className="sticky top-0 z-50 flex items-center gap-3 px-4 border-b h-7 border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
 
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <p className="text-xs truncate text-muted-foreground">
@@ -83,7 +83,7 @@ export function TopNav() {
           </ActionTooltip>
 
           <MonthlyCalendarDialog>
-            <Button type="button" variant="ghost" size="sm" className="min-w-[110px] text-xs font-semibold">
+            <Button type="button" variant="ghost" size="sm" className="min-w-27.5 text-xs font-semibold">
               {dateLabel}
             </Button>
           </MonthlyCalendarDialog>
