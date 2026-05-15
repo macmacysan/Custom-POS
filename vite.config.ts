@@ -12,7 +12,15 @@ export default defineConfig({
     tailwindcss(),
     electron([
       {
+        // Main process entry file of the Electron App.
         entry: 'electron/main.ts',
+      },
+      {
+        entry: 'electron/preload.ts',
+        onUpdate(args) {
+          // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete.
+          args.reload()
+        },
       },
     ]),
     renderer(),

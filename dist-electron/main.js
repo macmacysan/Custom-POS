@@ -1,4 +1,4 @@
-import { BrowserWindow, app, ipcMain, net } from "electron";
+import { BrowserWindow, app, ipcMain } from "electron";
 import * as path from "path";
 import { fileURLToPath } from "url";
 //#region electron/main.ts
@@ -10,7 +10,7 @@ function createWindow() {
 		width: 1200,
 		height: 800,
 		webPreferences: {
-			preload: path.join(__dirname, "../electron/preload.cjs"),
+			preload: path.join(__dirname, "preload.js"),
 			contextIsolation: true,
 			nodeIntegration: false
 		}
@@ -26,33 +26,33 @@ function createWindow() {
 }
 app.whenReady().then(() => {
 	createWindow();
-	ipcMain.handle("sync-expenses", async (_event, data) => {
-		return new Promise((resolve, reject) => {
-			const request = net.request({
+	ipcMain.handle("sync-to-gsheet", async (_event, { sheetName, data }) => {
+		console.log(`Syncing to Google Sheets: ${sheetName}, rows: ${data.length}`);
+		try {
+			const response = await fetch(GOOGLE_SCRIPT_URL, {
 				method: "POST",
-				url: GOOGLE_SCRIPT_URL
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					sheetName,
+					data
+				})
 			});
-			request.setHeader("Content-Type", "application/json");
-			request.on("response", (response) => {
-				let responseBody = "";
-				response.on("data", (chunk) => {
-					responseBody += chunk.toString();
-				});
-				response.on("end", () => {
-					if (response.statusCode === 200 || response.statusCode === 302) resolve({
-						success: true,
-						status: response.statusCode,
-						data: responseBody
-					});
-					else reject(/* @__PURE__ */ new Error(`Request failed with status ${response.statusCode}`));
-				});
-			});
-			request.on("error", (error) => {
-				reject(error);
-			});
-			request.write(JSON.stringify(data));
-			request.end();
-		});
+			console.log(`Response status: ${response.status} ${response.statusText}`);
+			const responseBody = await response.text();
+			console.log(`Response body: ${responseBody}`);
+			if (response.ok) return {
+				success: true,
+				status: response.status,
+				data: responseBody
+			};
+			else throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
+		} catch (error) {
+			console.error("Request error:", error);
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : String(error)
+			};
+		}
 	});
 	app.on("activate", function() {
 		if (BrowserWindow.getAllWindows().length === 0) createWindow();

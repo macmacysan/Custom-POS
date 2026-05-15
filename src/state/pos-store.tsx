@@ -36,6 +36,15 @@ type DatasetKey = 'expenses' | 'checks' | 'income' | 'payments' | 'financing' | 
 
 export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error' | 'offline'
 
+export type SyncLog = {
+  id: string
+  timestamp: Date
+  sheetName: string
+  status: SyncStatus
+  message: string
+  details?: any
+}
+
 type PosStoreValue = {
   authAccounts: AuthAccount[]
   currentUser: AuthSessionUser | null
@@ -49,6 +58,9 @@ type PosStoreValue = {
   setSyncError: React.Dispatch<React.SetStateAction<string | null>>
   lastSyncTime: Date | null
   setLastSyncTime: React.Dispatch<React.SetStateAction<Date | null>>
+  syncLogs: SyncLog[]
+  addSyncLog: (sheetName: string, status: SyncStatus, message: string, details?: any) => void
+  clearSyncLogs: () => void
   activeTab: PosTab
   setActiveTab: (tab: PosTab) => void
   setActiveSection: (section: NavSection) => void
@@ -112,6 +124,23 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
   const [syncStatus, setSyncStatus] = React.useState<SyncStatus>('idle')
   const [syncError, setSyncError] = React.useState<string | null>(null)
   const [lastSyncTime, setLastSyncTime] = React.useState<Date | null>(null)
+  const [syncLogs, setSyncLogs] = React.useState<SyncLog[]>([])
+  
+  const addSyncLog = React.useCallback((sheetName: string, status: SyncStatus, message: string, details?: any) => {
+    setSyncLogs((prev) => [
+      {
+        id: crypto.randomUUID(),
+        timestamp: new Date(),
+        sheetName,
+        status,
+        message,
+        details,
+      },
+      ...prev,
+    ].slice(0, 50)) // Keep last 50 logs
+  }, [])
+
+  const clearSyncLogs = React.useCallback(() => setSyncLogs([]), [])
   
   const [settings, setSettings] = React.useState<AppSettings>(() => loadSavedState('settings', initialSettings))
   const [expenses, setExpenses] = React.useState<ExpenseEntry[]>(() => loadSavedState('expenses', initialExpenses))
@@ -340,6 +369,9 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
       updateSidebarField,
       updateDeduction,
       updateDenomination,
+      syncLogs,
+      addSyncLog,
+      clearSyncLogs,
     }),
     [
       authAccounts,
@@ -351,6 +383,9 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
       syncStatus,
       syncError,
       lastSyncTime,
+      syncLogs,
+      addSyncLog,
+      clearSyncLogs,
       activeTab,
       setActiveTab,
       setActiveSection,

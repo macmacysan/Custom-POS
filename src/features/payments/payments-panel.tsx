@@ -107,10 +107,87 @@ export function PaymentsPanel() {
     redo,
     canUndo,
     canRedo,
+    currentDate,
+    setSyncStatus,
+    setSyncError,
+    setLastSyncTime,
+    addSyncLog,
   } = usePosStore()
 
   const [editingId, setEditingId] = React.useState<string | null>(null)
   const [draft, setDraft] = React.useState<Draft>(defaultDraft)
+
+  // -- Sync logic --
+  type PaymentSheetRow = {
+    rowId: number
+    syncDate: string
+    finance: string
+    type: string
+    terms: string
+    date: string
+    accountName: string
+    qty: number
+    item: string
+    unitPrice: number
+    grandTotal: number
+    down: number
+    balance: number
+    cr: string
+    lateFee: number
+    paymentMethod: string
+    notes: string
+  }
+
+  const formatForSheet = React.useCallback((): PaymentSheetRow[] => {
+    const dateStr = currentDate.toISOString().split('T')[0]
+    return payments.map((item, index) => ({
+      rowId: index + 1,
+      syncDate: dateStr,
+      finance: item.finance,
+      type: item.type,
+      terms: item.terms,
+      date: item.date,
+      accountName: item.accountName,
+      qty: item.qty,
+      item: item.item,
+      unitPrice: item.unitPrice,
+      grandTotal: item.grandTotal,
+      down: item.down,
+      balance: item.balance,
+      cr: item.cr,
+      lateFee: item.lateFee,
+      paymentMethod: item.paymentMethod,
+      notes: item.notes,
+    }))
+  }, [payments, currentDate])
+
+  const syncToSheet = React.useCallback(async (overridePayload?: PaymentSheetRow[]) => {
+    if (typeof window !== 'undefined' && window.electronAPI) {
+      if (!navigator.onLine) { setSyncStatus('offline'); setSyncError('No internet connection'); return }
+      setSyncStatus('syncing'); setSyncError(null)
+      try {
+        const payload = overridePayload || formatForSheet()
+        addSyncLog('Payments', 'syncing', `Starting sync for ${payload.length} rows`)
+        const result = await window.electronAPI.syncToGSheet('Payments', payload)
+        
+        if (result.success) {
+          setSyncStatus('success'); setLastSyncTime(new Date())
+          addSyncLog('Payments', 'success', `Synced ${payload.length} rows successfully`, result)
+        } else {
+          throw new Error(result.error || 'Sync failed')
+        }
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err ?? 'Unknown error during sync')
+        setSyncStatus('error'); setSyncError(message)
+        addSyncLog('Payments', 'error', message)
+      }
+    }
+  }, [formatForSheet, setSyncStatus, setSyncError, setLastSyncTime])
+
+  React.useEffect(() => {
+    const timer = setInterval(() => syncToSheet(), 5 * 60 * 1000)
+    return () => clearInterval(timer)
+  }, [syncToSheet])
 
   const isPaymentType = draft.type === 'Payment'
   const isMonthlyTerm = draft.termFrequency === 'Monthly'
@@ -168,20 +245,60 @@ export function PaymentsPanel() {
       notes: draft.notes,
     }
 
-    setPayments((prev: PaymentEntry[]) =>
-      editingId
-        ? prev.map((p) => (p.id === editingId ? next : p))
-        : [...prev, next],
-    )
+    setPayments((prev: PaymentEntry[]) => {
+      const updated = editingId ? prev.map((p) => (p.id === editingId ? next : p)) : [...prev, next]
+      const payload = updated.map((item, i) => ({
+        rowId: i + 1,
+        syncDate: currentDate.toISOString().split('T')[0],
+        finance: item.finance,
+        type: item.type,
+        terms: item.terms,
+        date: item.date,
+        accountName: item.accountName,
+        qty: item.qty,
+        item: item.item,
+        unitPrice: item.unitPrice,
+        grandTotal: item.grandTotal,
+        down: item.down,
+        balance: item.balance,
+        cr: item.cr,
+        lateFee: item.lateFee,
+        paymentMethod: item.paymentMethod,
+        notes: item.notes,
+      }))
+      setTimeout(() => syncToSheet(payload), 0)
+      return updated
+    })
 
     reset()
   }
 
   function onDelete(id: string) {
     pushHistory('payments')
-    setPayments((prev: PaymentEntry[]) =>
-      prev.filter((p) => p.id !== id),
-    )
+    setPayments((prev: PaymentEntry[]) => {
+      const updated = prev.filter((p) => p.id !== id)
+      const payload = updated.map((item, i) => ({
+        rowId: i + 1,
+        syncDate: currentDate.toISOString().split('T')[0],
+        finance: item.finance,
+        type: item.type,
+        terms: item.terms,
+        date: item.date,
+        accountName: item.accountName,
+        qty: item.qty,
+        item: item.item,
+        unitPrice: item.unitPrice,
+        grandTotal: item.grandTotal,
+        down: item.down,
+        balance: item.balance,
+        cr: item.cr,
+        lateFee: item.lateFee,
+        paymentMethod: item.paymentMethod,
+        notes: item.notes,
+      }))
+      setTimeout(() => syncToSheet(payload), 0)
+      return updated
+    })
     if (editingId === id) reset()
   }
 
@@ -189,6 +306,7 @@ export function PaymentsPanel() {
     if (payments.length === 0) return
     pushHistory('payments')
     setPayments([])
+    setTimeout(() => syncToSheet([]), 0)
     reset()
   }
 

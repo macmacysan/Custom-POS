@@ -65,10 +65,73 @@ const defaultDraft: Draft = {
 }
 
 export function ChecksPanel() {
-  const { checks, setChecks, pushHistory, undo, redo, canUndo, canRedo } = usePosStore()
+  const {
+    checks, setChecks, pushHistory,
+    undo, redo, canUndo, canRedo,
+    currentDate,
+    setSyncStatus, setSyncError, setLastSyncTime,
+    addSyncLog,
+  } = usePosStore()
+
   const [editingId, setEditingId] = React.useState<string | null>(null)
   const [draft, setDraft] = React.useState<Draft>(defaultDraft)
   const totals = summarizeChecks(checks)
+
+  // -- Sync logic --
+  type CheckSheetRow = {
+    rowId: number
+    syncDate: string
+    type: string
+    bank: string
+    account: string
+    checkNo: string
+    receipt: string
+    recordDate: string
+    amount: number
+  }
+
+  const formatForSheet = React.useCallback((): CheckSheetRow[] => {
+    const dateStr = currentDate.toISOString().split('T')[0]
+    return checks.map((item, index) => ({
+      rowId: index + 1,
+      syncDate: dateStr,
+      type: item.type,
+      bank: item.bank,
+      account: item.account,
+      checkNo: item.checkNo,
+      receipt: item.receipt,
+      recordDate: item.date,
+      amount: item.amount,
+    }))
+  }, [checks, currentDate])
+
+  const syncToSheet = React.useCallback(async (overridePayload?: CheckSheetRow[]) => {
+    if (typeof window !== 'undefined' && window.electronAPI) {
+      if (!navigator.onLine) { setSyncStatus('offline'); setSyncError('No internet connection'); return }
+      setSyncStatus('syncing'); setSyncError(null)
+      try {
+        const payload = overridePayload || formatForSheet()
+        addSyncLog('Checks', 'syncing', `Starting sync for ${payload.length} rows`)
+        const result = await window.electronAPI.syncToGSheet('Checks', payload)
+        
+        if (result.success) {
+          setSyncStatus('success'); setLastSyncTime(new Date())
+          addSyncLog('Checks', 'success', `Synced ${payload.length} rows successfully`, result)
+        } else {
+          throw new Error(result.error || 'Sync failed')
+        }
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err ?? 'Unknown error during sync')
+        setSyncStatus('error'); setSyncError(message)
+        addSyncLog('Checks', 'error', message)
+      }
+    }
+  }, [formatForSheet, setSyncStatus, setSyncError, setLastSyncTime])
+
+  React.useEffect(() => {
+    const timer = setInterval(() => syncToSheet(), 5 * 60 * 1000)
+    return () => clearInterval(timer)
+  }, [syncToSheet])
 
   function reset() {
     setEditingId(null)
@@ -89,13 +152,43 @@ export function ChecksPanel() {
       date: draft.date || '',
       amount,
     }
-    setChecks((prev) => (editingId ? prev.map((x) => (x.id === editingId ? entry : x)) : [...prev, entry]))
+    setChecks((prev) => {
+      const updated = editingId ? prev.map((x) => (x.id === editingId ? entry : x)) : [...prev, entry]
+      const payload = updated.map((item, i) => ({
+        rowId: i + 1,
+        syncDate: currentDate.toISOString().split('T')[0],
+        type: item.type,
+        bank: item.bank,
+        account: item.account,
+        checkNo: item.checkNo,
+        receipt: item.receipt,
+        recordDate: item.date,
+        amount: item.amount,
+      }))
+      setTimeout(() => syncToSheet(payload), 0)
+      return updated
+    })
     reset()
   }
 
   function onDelete(id: string) {
     pushHistory('checks')
-    setChecks((prev) => prev.filter((row) => row.id !== id))
+    setChecks((prev) => {
+      const updated = prev.filter((row) => row.id !== id)
+      const payload = updated.map((item, i) => ({
+        rowId: i + 1,
+        syncDate: currentDate.toISOString().split('T')[0],
+        type: item.type,
+        bank: item.bank,
+        account: item.account,
+        checkNo: item.checkNo,
+        receipt: item.receipt,
+        recordDate: item.date,
+        amount: item.amount,
+      }))
+      setTimeout(() => syncToSheet(payload), 0)
+      return updated
+    })
     if (editingId === id) reset()
   }
 
@@ -176,6 +269,7 @@ export function ChecksPanel() {
                   onClick={() => {
                     pushHistory('checks')
                     setChecks([])
+                    setTimeout(() => syncToSheet([]), 0)
                     reset()
                   }}
                   className="h-6 px-2 text-[10px] text-muted-foreground hover:text-destructive hover:bg-destructive/8"

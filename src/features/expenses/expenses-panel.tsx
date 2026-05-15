@@ -59,6 +59,7 @@ export function ExpensesPanel() {
     undo, redo, canUndo, canRedo,
     settings, currentDate,
     setSyncStatus, setSyncError, setLastSyncTime,
+    addSyncLog,
   } = usePosStore()
 
   const [editingId, setEditingId] = React.useState<string | null>(null)
@@ -92,11 +93,19 @@ export function ExpensesPanel() {
       setSyncStatus('syncing'); setSyncError(null)
       try {
         const payload = overridePayload || formatForSheet()
-        await window.electronAPI.syncExpenses(payload)
-        setSyncStatus('success'); setLastSyncTime(new Date())
+        addSyncLog('Expenses', 'syncing', `Starting sync for ${payload.length} rows`)
+        const result = await window.electronAPI.syncToGSheet('Expenses', payload)
+        
+        if (result.success) {
+          setSyncStatus('success'); setLastSyncTime(new Date())
+          addSyncLog('Expenses', 'success', `Synced ${payload.length} rows successfully`, result)
+        } else {
+          throw new Error(result.error || 'Sync failed')
+        }
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err ?? 'Unknown error during sync')
         setSyncStatus('error'); setSyncError(message)
+        addSyncLog('Expenses', 'error', message)
       }
     }
   }, [formatForSheet, setSyncStatus, setSyncError, setLastSyncTime])

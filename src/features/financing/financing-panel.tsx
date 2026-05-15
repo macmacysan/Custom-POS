@@ -83,10 +83,73 @@ export function FinancingPanel() {
     redo,
     canUndo,
     canRedo,
+    currentDate,
+    setSyncStatus,
+    setSyncError,
+    setLastSyncTime,
+    addSyncLog,
   } = usePosStore()
 
   const [editingId, setEditingId] = React.useState<string | null>(null)
   const [draft, setDraft] = React.useState<Draft>(defaultDraft)
+
+  // -- Sync logic --
+  type FinancingSheetRow = {
+    rowId: number
+    syncDate: string
+    provider: string
+    applicant: string
+    contact: string
+    item: string
+    amount: number
+    terms: number
+    status: string
+    dateApplied: string
+  }
+
+  const formatForSheet = React.useCallback((): FinancingSheetRow[] => {
+    const dateStr = currentDate.toISOString().split('T')[0]
+    return financing.map((item, index) => ({
+      rowId: index + 1,
+      syncDate: dateStr,
+      provider: item.financeProvider,
+      applicant: item.applicantName,
+      contact: item.contactNumber,
+      item: item.item,
+      amount: item.loanAmount,
+      terms: item.termMonths,
+      status: item.status,
+      dateApplied: item.dateApplied,
+    }))
+  }, [financing, currentDate])
+
+  const syncToSheet = React.useCallback(async (overridePayload?: FinancingSheetRow[]) => {
+    if (typeof window !== 'undefined' && window.electronAPI) {
+      if (!navigator.onLine) { setSyncStatus('offline'); setSyncError('No internet connection'); return }
+      setSyncStatus('syncing'); setSyncError(null)
+      try {
+        const payload = overridePayload || formatForSheet()
+        addSyncLog('Financing', 'syncing', `Starting sync for ${payload.length} rows`)
+        const result = await window.electronAPI.syncToGSheet('Financing', payload)
+        
+        if (result.success) {
+          setSyncStatus('success'); setLastSyncTime(new Date())
+          addSyncLog('Financing', 'success', `Synced ${payload.length} rows successfully`, result)
+        } else {
+          throw new Error(result.error || 'Sync failed')
+        }
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err ?? 'Unknown error during sync')
+        setSyncStatus('error'); setSyncError(message)
+        addSyncLog('Financing', 'error', message)
+      }
+    }
+  }, [formatForSheet, setSyncStatus, setSyncError, setLastSyncTime])
+
+  React.useEffect(() => {
+    const timer = setInterval(() => syncToSheet(), 5 * 60 * 1000)
+    return () => clearInterval(timer)
+  }, [syncToSheet])
 
   function reset() {
     setEditingId(null)
@@ -124,18 +187,46 @@ export function FinancingPanel() {
       dateApplied: draft.dateApplied,
     }
 
-    setFinancing((prev: FinancingEntry[]) =>
-      editingId
-        ? prev.map((p) => (p.id === editingId ? next : p))
-        : [...prev, next],
-    )
+    setFinancing((prev: FinancingEntry[]) => {
+      const updated = editingId ? prev.map((p) => (p.id === editingId ? next : p)) : [...prev, next]
+      const payload = updated.map((item, i) => ({
+        rowId: i + 1,
+        syncDate: currentDate.toISOString().split('T')[0],
+        provider: item.financeProvider,
+        applicant: item.applicantName,
+        contact: item.contactNumber,
+        item: item.item,
+        amount: item.loanAmount,
+        terms: item.termMonths,
+        status: item.status,
+        dateApplied: item.dateApplied,
+      }))
+      setTimeout(() => syncToSheet(payload), 0)
+      return updated
+    })
 
     reset()
   }
 
   function onDelete(id: string) {
     pushHistory('financing')
-    setFinancing((prev: FinancingEntry[]) => prev.filter((p) => p.id !== id))
+    setFinancing((prev: FinancingEntry[]) => {
+      const updated = prev.filter((p) => p.id !== id)
+      const payload = updated.map((item, i) => ({
+        rowId: i + 1,
+        syncDate: currentDate.toISOString().split('T')[0],
+        provider: item.financeProvider,
+        applicant: item.applicantName,
+        contact: item.contactNumber,
+        item: item.item,
+        amount: item.loanAmount,
+        terms: item.termMonths,
+        status: item.status,
+        dateApplied: item.dateApplied,
+      }))
+      setTimeout(() => syncToSheet(payload), 0)
+      return updated
+    })
     if (editingId === id) reset()
   }
 
@@ -143,6 +234,7 @@ export function FinancingPanel() {
     if (financing.length === 0) return
     pushHistory('financing')
     setFinancing([])
+    setTimeout(() => syncToSheet([]), 0)
     reset()
   }
 

@@ -41,10 +41,10 @@ function MobileSidebarSheet() {
 
 export function AppLayout() {
   return (
-    <div className="flex flex-col w-full h-screen overflow-hidden bg-background bg-linear-to-br from-background via-background to-muted/30">
-      <div className="border flex flex-1 min-h-0 overflow-hidden">
-        <WorkspaceNavigationSidebar className="hidden w-48 shrink-0 bg-sidebar/80 backdrop-blur-xl lg:flex" />
-        <main className="relative flex flex-col flex-1 h-full min-w-0 overflow-hidden bg-background/50 backdrop-blur-sm">
+    <div className="flex flex-col w-full h-screen overflow-hidden bg-background">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        <WorkspaceNavigationSidebar className="hidden shrink-0 border-r border-sidebar-border lg:flex" />
+        <main className="relative flex flex-col flex-1 h-full min-w-0 overflow-hidden bg-background">
           <WorkspaceTabs />
         </main>
         <MasterCalculationsSidebar />

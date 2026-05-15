@@ -13,7 +13,7 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      preload: path.join(__dirname, '../electron/preload.cjs'),
+      preload: path.join(__dirname, 'preload.js'),
       // Ensure context isolation is enabled
       contextIsolation: true,
       nodeIntegration: false,
@@ -38,38 +38,31 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow()
 
-  // Set up IPC handler for syncing expenses
-  ipcMain.handle('sync-expenses', async (_event, data) => {
-    return new Promise((resolve, reject) => {
-      const request = net.request({
+  // Set up generic IPC handler for syncing to Google Sheets
+  ipcMain.handle('sync-to-gsheet', async (_event, { sheetName, data }) => {
+    console.log(`Syncing to Google Sheets: ${sheetName}, rows: ${data.length}`)
+    try {
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        url: GOOGLE_SCRIPT_URL,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sheetName, data }),
       })
 
-      request.setHeader('Content-Type', 'application/json')
+      console.log(`Response status: ${response.status} ${response.statusText}`)
+      const responseBody = await response.text()
+      console.log(`Response body: ${responseBody}`)
 
-      request.on('response', (response) => {
-        let responseBody = ''
-        response.on('data', (chunk) => {
-          responseBody += chunk.toString()
-        })
-        response.on('end', () => {
-          if (response.statusCode === 200 || response.statusCode === 302) {
-            resolve({ success: true, status: response.statusCode, data: responseBody })
-          } else {
-            reject(new Error(`Request failed with status ${response.statusCode}`))
-          }
-        })
-      })
-
-      request.on('error', (error) => {
-        reject(error)
-      })
-
-      // Send the JSON payload
-      request.write(JSON.stringify(data))
-      request.end()
-    })
+      if (response.ok) {
+        return { success: true, status: response.status, data: responseBody }
+      } else {
+        throw new Error(`Request failed with status ${response.status}: ${response.statusText}`)
+      }
+    } catch (error) {
+      console.error('Request error:', error)
+      return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
   })
 
   app.on('activate', function () {

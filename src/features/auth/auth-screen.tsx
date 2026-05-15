@@ -1,6 +1,4 @@
 import * as React from 'react'
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +11,7 @@ import {
 } from '@/components/ui/select'
 import { BRANCH_OPTIONS, type BranchName } from '@/types/pos'
 import { usePosStore } from '@/state/pos-store'
+import { cn } from '@/lib/utils'
 
 type Mode = 'login' | 'create'
 
@@ -32,89 +31,119 @@ export function AuthScreen() {
     event.preventDefault()
     setError(null)
     setSuccess(null)
-
-    if (!branch) {
-      setError('Please select a branch.')
-      return
-    }
-
+    if (!branch) { setError('Please select a branch.'); return }
     const result = login(username, password, branch)
-    if (!result.ok) {
-      setError(result.error ?? 'Unable to login.')
-    }
+    if (!result.ok) setError(result.error ?? 'Unable to login.')
   }
 
   const handleCreate = (event: React.FormEvent) => {
     event.preventDefault()
     setError(null)
     setSuccess(null)
-
     const result = createAccount(username, password)
-    if (!result.ok) {
-      setError(result.error ?? 'Unable to create account.')
-      return
-    }
-
+    if (!result.ok) { setError(result.error ?? 'Unable to create account.'); return }
     setSuccess('Account created. You can now login.')
     setMode('login')
     setPassword('')
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 bg-background">
-      <Card className="w-full max-w-md border border-border/70 bg-card/90 backdrop-blur">
-        <CardHeader>
-          <CardTitle>Custom POS Access</CardTitle>
-          <CardDescription>
-            {mode === 'login'
-              ? 'Login to continue. Branch selection is required per session.'
-              : 'Create a local account for this POS device.'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-2 mb-4">
-            <Button type="button" variant={mode === 'login' ? 'default' : 'outline'} onClick={() => setMode('login')}>
-              Login
-            </Button>
-            <Button type="button" variant={mode === 'create' ? 'default' : 'outline'} onClick={() => setMode('create')}>
-              Create Account
-            </Button>
-          </div>
+    <div className="flex items-center justify-center min-h-screen bg-background">
 
-          <form className="space-y-3" onSubmit={mode === 'login' ? handleLogin : handleCreate}>
+      {/* Background grid pattern */}
+      <div
+        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06] pointer-events-none"
+        style={{
+          backgroundImage: 'linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+        }}
+      />
+
+      <div className="relative z-10 w-full max-w-sm px-4">
+
+        {/* POS terminal mark */}
+        <div className="flex flex-col items-center mb-8 gap-3">
+          <div className="flex items-center justify-center size-14 rounded-xl bg-primary text-primary-foreground font-mono font-black text-xl tracking-tight shadow-lg shadow-primary/30">
+            POS
+          </div>
+          <div className="text-center">
+            <h1 className="text-lg font-bold tracking-tight text-foreground">Cashiers Report</h1>
+            <p className="text-xs text-muted-foreground">Nueva Camsur Home Furnishing</p>
+          </div>
+        </div>
+
+        {/* Mode switcher */}
+        <div className="grid grid-cols-2 gap-1.5 mb-5 p-1 rounded-lg bg-muted border border-border">
+          <button
+            type="button"
+            onClick={() => setMode('login')}
+            className={cn(
+              'text-xs font-semibold py-1.5 rounded-md transition-all',
+              mode === 'login'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('create')}
+            className={cn(
+              'text-xs font-semibold py-1.5 rounded-md transition-all',
+              mode === 'create'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            Create Account
+          </button>
+        </div>
+
+        {/* Form card */}
+        <div className="bg-card border border-border rounded-xl shadow-lg p-5 space-y-3.5">
+          <form onSubmit={mode === 'login' ? handleLogin : handleCreate} className="space-y-3">
             <div className="space-y-1.5">
-              <Label htmlFor="auth-username">Username</Label>
+              <Label htmlFor="auth-username" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Username
+              </Label>
               <Input
                 id="auth-username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter username"
                 autoComplete="username"
+                className="h-9 font-mono text-sm bg-background border-border focus-visible:ring-primary/30"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="auth-password">Password</Label>
+              <Label htmlFor="auth-password" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Password
+              </Label>
               <Input
                 id="auth-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={mode === 'create' ? 'Minimum 4 characters' : 'Enter password'}
+                placeholder={mode === 'create' ? 'Minimum 4 characters' : '••••••••'}
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                className="h-9 font-mono text-sm bg-background border-border focus-visible:ring-primary/30"
               />
             </div>
 
             {mode === 'login' && (
               <div className="space-y-1.5">
-                <Label>Branch</Label>
+                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Branch
+                </Label>
                 <Select value={branch} onValueChange={(value) => setBranch(value as BranchName)}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="h-9 w-full bg-background border-border text-sm">
                     <SelectValue placeholder="Select branch" />
                   </SelectTrigger>
                   <SelectContent>
                     {BRANCH_OPTIONS.map((branchName) => (
-                      <SelectItem key={branchName} value={branchName}>
+                      <SelectItem key={branchName} value={branchName} className="text-sm font-medium">
                         {branchName}
                       </SelectItem>
                     ))}
@@ -123,19 +152,38 @@ export function AuthScreen() {
               </div>
             )}
 
-            {error && <p className="text-xs text-red-500">{error}</p>}
-            {success && <p className="text-xs text-emerald-600">{success}</p>}
+            {/* Status messages */}
+            {error && (
+              <div className="rounded-md bg-destructive/10 border border-destructive/20 px-3 py-2">
+                <p className="text-xs text-destructive font-medium">{error}</p>
+              </div>
+            )}
+            {success && (
+              <div className="rounded-md bg-emerald-500/10 border border-emerald-500/20 px-3 py-2">
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">{success}</p>
+              </div>
+            )}
 
-            <Button type="submit" className="w-full" disabled={mode === 'login' ? !canLogin : !canCreate}>
-              {mode === 'login' ? 'Login' : 'Create Account'}
+            <Button
+              type="submit"
+              className="w-full h-9 font-semibold text-sm mt-1"
+              disabled={mode === 'login' ? !canLogin : !canCreate}
+            >
+              {mode === 'login' ? 'Sign In' : 'Create Account'}
             </Button>
-
-            <p className="text-[11px] text-muted-foreground">
-              Existing accounts on this device: <span className="font-medium text-foreground">{authAccounts.length}</span>
-            </p>
           </form>
-        </CardContent>
-      </Card>
+
+          <p className="text-center text-[11px] text-muted-foreground/60 border-t border-border pt-3">
+            {authAccounts.length === 0
+              ? 'No accounts on this device yet.'
+              : `${authAccounts.length} account${authAccounts.length > 1 ? 's' : ''} registered on this device`}
+          </p>
+        </div>
+
+        <p className="text-center text-[10px] text-muted-foreground/40 mt-5 font-mono">
+          POS Terminal v1.0 · Offline-capable
+        </p>
+      </div>
     </div>
   )
 }

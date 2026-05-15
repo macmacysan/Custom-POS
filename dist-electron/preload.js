@@ -1,4 +1,7 @@
-import { contextBridge as e, ipcRenderer as t } from "electron";
+import { contextBridge, ipcRenderer } from "electron";
 //#region electron/preload.ts
-e.exposeInMainWorld("electronAPI", { syncExpenses: (e) => t.invoke("sync-expenses", e) });
+contextBridge.exposeInMainWorld("electronAPI", { syncToGSheet: (sheetName, data) => ipcRenderer.invoke("sync-to-gsheet", {
+	sheetName,
+	data
+}) });
 //#endregion

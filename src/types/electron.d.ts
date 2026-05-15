@@ -1,5 +1,5 @@
 export interface ElectronAPI {
-  syncExpenses: (data: any) => Promise<any>
+  syncToGSheet: (sheetName: string, data: any) => Promise<any>
 }
 
 declare global {
