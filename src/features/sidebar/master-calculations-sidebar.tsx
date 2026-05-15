@@ -36,7 +36,7 @@ function TooltipItemList({ items }: { items: HoverItem[] }) {
         </span>
       </div>
       
-      <div className="max-h-56 overflow-y-auto pr-1 -mr-1 scrollbar-thin scrollbar-thumb-border">
+      <div className="pr-1 -mr-1 overflow-y-auto max-h-56 scrollbar-thin scrollbar-thumb-border">
         <div className="space-y-1">
           {items.map((item, idx) => (
             <div key={idx} className="flex items-start justify-between gap-4 group/item">
@@ -71,7 +71,7 @@ function SidebarTooltip({ children, items, isDark }: { children: React.ReactElem
         sideOffset={12}
         avoidCollisions={true}
         className={cn(
-          'z-[9999] w-64 p-3 shadow-2xl animate-in fade-in zoom-in-95 duration-200',
+          'z-9999 w-64 p-3 shadow-2xl animate-in fade-in zoom-in-95 duration-200',
           'bg-popover/95 backdrop-blur-xl rounded-lg border border-border/50 shadow-black/10',
           isDark && 'dark bg-slate-900/95 text-slate-50 border-slate-800 shadow-black/40',
         )}
@@ -88,7 +88,6 @@ function SidebarTooltip({ children, items, isDark }: { children: React.ReactElem
 export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embeddedInSheet?: boolean }) {
   const {
     sidebar,
-    settings,
     updateSidebarField,
     updateDeduction,
     updateDenomination,
@@ -100,7 +99,7 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
 
   const [deductionsOpen, setDeductionsOpen] = React.useState(false)
   const [denomOpen, setDenomOpen] = React.useState(false)
-  const isDarkSidebar = settings.sidebarAlwaysDark
+  const isDarkSidebar = false
   const totals = calculateMasterTotals(sidebar, expenses, checks, income, payments)
 
   return (
@@ -109,15 +108,15 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
         className={cn(
           'h-full w-64 shrink-0 flex-col border-r transition-all duration-300',
           'bg-sidebar/70 backdrop-blur-md border-border',
-          isDarkSidebar ? 'dark bg-slate-950/90 text-slate-50 border-slate-800' : 'bg-sidebar/50',
+          'bg-sidebar/50',
           embeddedInSheet ? 'flex min-h-0' : 'hidden lg:flex',
         )}
       >
         {/* Header - Dashboard Title */}
         {!embeddedInSheet && (
-          <div className={cn("px-4 py-3 border-b shrink-0", isDarkSidebar && "border-slate-800")}>
+          <div className="px-4 py-3 border-b shrink-0">
             <h2 className="text-sm font-bold tracking-tight uppercase opacity-80">Cashier Summary</h2>
-            <p className={cn("text-[10px]", isDarkSidebar ? "text-slate-400" : "text-muted-foreground")}>Daily financial audit</p>
+            <p className="text-[10px] text-muted-foreground">Daily financial audit</p>
           </div>
         )}
 
@@ -140,7 +139,7 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
                 />
                 
                 {/* Column headers */}
-                <div className={cn("grid grid-cols-[1fr_40px_88px] gap-1 px-2 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest", isDarkSidebar ? "text-slate-500" : "text-muted-foreground/50")}>
+                <div className="grid grid-cols-[1fr_40px_88px] gap-1 px-2 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50">
                   <span>Type</span>
                   <span className="text-center">Qty</span>
                   <span className="text-right">Amount</span>
@@ -226,12 +225,11 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
         {/* -- Footer -- */}
         <div className={cn(
           'shrink-0 border-t bg-sidebar/95 backdrop-blur-md px-3 py-4 space-y-3 z-10 shadow-[0_-8px_20px_rgba(0,0,0,0.04)]',
-          isDarkSidebar && 'border-slate-800 bg-slate-900/90',
         )}>
           <div className="space-y-1">
             <div className="flex items-center justify-between px-1">
-              <span className={cn("text-[10px] font-semibold uppercase tracking-wider", isDarkSidebar ? "text-slate-400" : "text-muted-foreground")}>Expected Cash</span>
-              <span className="text-sm font-bold font-mono tabular-nums">{formatCurrency(totals.expectedCash)}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Expected Cash</span>
+              <span className="font-mono text-sm font-bold tabular-nums">{formatCurrency(totals.expectedCash)}</span>
             </div>
             <MoneyInput label="Cash Remitted" value={sidebar.cashRemitted} onChange={(v) => updateSidebarField('cashRemitted', v)} isDark={isDarkSidebar} />
           </div>
@@ -248,7 +246,7 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
             <p className="text-[9px] font-bold uppercase tracking-[0.2em] opacity-70 mb-0.5">
               {totals.cashVariance === 0 ? 'Cash Audit' : 'Variance Detection'}
             </p>
-            <p className="text-sm font-black tabular-nums tracking-tight">
+            <p className="text-sm font-black tracking-tight tabular-nums">
               {totals.cashVariance === 0 ? 'BALANCED' : formatCurrency(totals.cashVariance)}
             </p>
           </div>
@@ -292,7 +290,7 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
                       placeholder="0"
                     />
                   </div>
-                  <span className="font-mono text-xs font-medium text-right w-20 tabular-nums">{formatNumber(rowTotal)}</span>
+                  <span className="w-20 font-mono text-xs font-medium text-right tabular-nums">{formatNumber(rowTotal)}</span>
                 </div>
               )
             })}
@@ -369,7 +367,7 @@ function MoneyInput({ label, value, onChange, isDark }: { label: string; value: 
       <span className={cn('text-[11px] font-medium text-muted-foreground group-focus-within:text-foreground transition-colors truncate', isDark && 'text-slate-400 group-focus-within:text-slate-200')}>
         {label}
       </span>
-      <div className="relative w-[88px] shrink-0">
+      <div className="relative w-22 shrink-0">
         <Input
           type="text"
           inputMode="decimal"
@@ -456,4 +454,4 @@ function TotalRow({ label, value, isDark, color = 'blue' }: { label: string; val
       </span>
     </div>
   )
-}
+}

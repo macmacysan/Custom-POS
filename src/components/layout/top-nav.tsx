@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Settings, Keyboard, ChevronLeft, ChevronRight, Menu } from "lucide-react"
+import { ChevronLeft, ChevronRight, Menu } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { SettingsDialog } from "@/components/dialogs/settings-dialog"
@@ -8,8 +8,6 @@ import { MonthlyCalendarDialog } from "@/components/dialogs/monthly-calendar-dia
 
 import { ActionTooltip } from "@/components/ui/action-tooltip"
 import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-
 
 import { usePosStore } from "@/state/pos-store"
 import { SECTION_LABELS, sectionForTab, tabLabel } from "@/lib/nav-sections"

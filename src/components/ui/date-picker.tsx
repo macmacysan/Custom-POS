@@ -29,13 +29,13 @@ export function DatePicker({
   disabled = false,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false)
-  
+
   const [date, setDate] = React.useState<Date | undefined>(
-    value ? new Date(value) : undefined
+    value ? new Date(value.replace(/-/g, '/')) : undefined
   )
-  
+
   const [month, setMonth] = React.useState<Date | undefined>(date)
-  
+
   const [inputValue, setInputValue] = React.useState(
     date ? format(date, "yyyy/MM/dd") : ""
   )
@@ -44,11 +44,13 @@ export function DatePicker({
     if (value) {
       const safeValue = value.replace(/-/g, '/')
       const parsedDate = new Date(safeValue)
-      
+
       if (!isNaN(parsedDate.getTime())) {
+        /* eslint-disable react-hooks/set-state-in-effect */
         setDate(parsedDate)
         setInputValue(format(parsedDate, "yyyy/MM/dd"))
         setMonth(parsedDate)
+        /* eslint-enable react-hooks/set-state-in-effect */
       }
     } else {
       setDate(undefined)
@@ -70,7 +72,7 @@ export function DatePicker({
 
   // FIXED: The Input Mask logic
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = e.target.value
+    const val = e.target.value
 
     // 1. Strip out everything except numbers
     const digits = val.replace(/\D/g, '')

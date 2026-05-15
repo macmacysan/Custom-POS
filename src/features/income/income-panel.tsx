@@ -16,21 +16,24 @@ import { cn } from '@/lib/utils'
 const incomeTypes: IncomeType[] = ['Load', 'Cash Reimbursement', 'Others']
 
 // Per-type accent: left-border color + subtle tints
-const typeAccent: Record<IncomeType, { border: string; badge: string; header: string }> = {
+const typeAccent: Record<IncomeType, { border: string; badge: string; header: string; dot: string }> = {
   Load: {
     border: 'border-l-blue-500/60',
     badge: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
     header: 'bg-blue-500/5 text-blue-700 dark:text-blue-300',
+    dot: 'bg-blue-500/70',
   },
   'Cash Reimbursement': {
     border: 'border-l-emerald-500/60',
     badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
     header: 'bg-emerald-500/5 text-emerald-700 dark:text-emerald-300',
+    dot: 'bg-emerald-500/70',
   },
   Others: {
     border: 'border-l-violet-500/60',
     badge: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
     header: 'bg-violet-500/5 text-violet-700 dark:text-violet-300',
+    dot: 'bg-violet-500/70',
   },
 }
 
@@ -43,7 +46,7 @@ export function IncomePanel() {
   const [draft, setDraft] = React.useState<Draft>(defaultDraft)
   const totals = summarizeIncome(income)
 
-  const reset = () => { setEditingId(null); setDraft(defaultDraft) }
+  function reset() { setEditingId(null); setDraft(defaultDraft) }
 
   function onSave() {
     const amount = parseMoney(draft.amount)
@@ -95,8 +98,10 @@ export function IncomePanel() {
 
   return (
     <div className="grid h-full grid-cols-1 lg:grid-cols-[1fr_235px]">
+
       {/* ── Table section ── */}
       <section className="flex flex-col min-h-0 overflow-hidden bg-card">
+
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1.5 border-b">
           <div className="flex items-center gap-2">
@@ -156,10 +161,10 @@ export function IncomePanel() {
           <Table>
             <TableHeader>
               <TableRow className="border-b-2 hover:bg-transparent border-border/60">
-                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-8">Particular / Remarks</TableHead>
-                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Receipt</TableHead>
-                <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Date</TableHead>
-                <TableHead className="text-right h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 pr-0">Amount</TableHead>
+                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-8">Particular / Remarks</TableHead>
+                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Receipt</TableHead>
+                <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Date</TableHead>
+                <TableHead className="text-right h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pr-0">Amount</TableHead>
                 <TableHead className="w-10"></TableHead>
               </TableRow>
             </TableHeader>
@@ -181,6 +186,8 @@ export function IncomePanel() {
                 >
                   {/* Group header row */}
                   <TableRow className={cn('hover:bg-transparent border-none', accent.header)}>
+
+                    {/* 1. Left Side (Spans Particular, Receipt, Date) */}
                     <TableCell colSpan={3} className="py-1 pl-3">
                       <div className="flex items-center gap-2">
                         <span className={cn('text-[9px] font-bold uppercase tracking-widest px-1.5 py-px rounded-sm', accent.badge)}>
@@ -191,12 +198,17 @@ export function IncomePanel() {
                         </span>
                       </div>
                     </TableCell>
+
+                    {/* 2. Subtotal Column (Locks strictly to the Amount column) */}
                     <TableCell className="py-1 pr-0 text-right">
                       <span className="text-[10px] font-semibold font-mono tabular-nums opacity-60">
                         {formatCurrency(groupTotal)}
                       </span>
                     </TableCell>
+
+                    {/* 3. Action Spacer (Accounts for the hidden edit/delete column) */}
                     <TableCell className="w-10 py-1"></TableCell>
+
                   </TableRow>
 
                   {/* Data rows */}
@@ -224,7 +236,7 @@ export function IncomePanel() {
                                   {row.remarks || row.particular}
                                 </span>
                               </TooltipTrigger>
-                              <TooltipContent side="bottom" align="start" className="max-w-[300px] whitespace-normal break-words">
+                              <TooltipContent side="bottom" align="start" className="whitespace-normal max-w-75 wrap-break-word">
                                 <div className="font-semibold text-[10px] uppercase text-muted-foreground mb-0.5">{row.particular}</div>
                                 {row.remarks || 'No remarks'}
                               </TooltipContent>
@@ -235,16 +247,15 @@ export function IncomePanel() {
 
                       {/* Receipt */}
                       <TableCell className="py-0 text-[11px] text-muted-foreground font-mono">
-                        {row.receipt ? (
-                          <span className="bg-muted/50 rounded px-1 py-px text-[10px]">{row.receipt}</span>
-                        ) : (
-                          <span className="select-none text-muted-foreground/35"></span>
-                        )}
+                        {row.receipt
+                          ? <span className="bg-muted/50 rounded px-1 py-px text-[10px]">{row.receipt}</span>
+                          : <span className="select-none text-muted-foreground/35"></span>
+                        }
                       </TableCell>
 
                       {/* Date */}
                       <TableCell className="py-0 text-[11px] text-muted-foreground font-mono">
-                        {row.date || <span className="text-muted-foreground/35"></span>}
+                        {row.date || <span className="select-none text-muted-foreground/35"></span>}
                       </TableCell>
 
                       {/* Amount */}
@@ -252,7 +263,7 @@ export function IncomePanel() {
                         <span className="font-mono text-xs font-medium">{formatCurrency(row.amount)}</span>
                       </TableCell>
 
-                      {/* Actions */}
+                      {/* Dedicated Actions Column (Only visible on hover) */}
                       <TableCell className="w-12 px-0 py-0">
                         <div className="flex items-center justify-end gap-px transition-opacity opacity-0 group-hover:opacity-100">
                           <Button
@@ -278,6 +289,7 @@ export function IncomePanel() {
                 </TableBody>
               )
             })}
+
             {income.length === 0 && (
               <TableBody>
                 <TableRow className="hover:bg-transparent">
@@ -290,21 +302,21 @@ export function IncomePanel() {
           </Table>
         </div>
 
-        {/* Footer — summary bar */}
+        {/* Footer — ledger summary bar */}
         <div className="shrink-0 border-t bg-muted/20 px-3 py-1.5">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
             <span className="flex items-center gap-1.5 text-[10px]">
-              <span className="h-1.5 w-1.5 rounded-full bg-blue-500/70 shrink-0" />
+              <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', typeAccent['Load'].dot)} />
               <span className="text-muted-foreground">Load</span>
               <span className="font-light tabular-nums">{formatCurrency(totals.load)}</span>
             </span>
             <span className="flex items-center gap-1.5 text-[10px]">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/70 shrink-0" />
+              <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', typeAccent['Cash Reimbursement'].dot)} />
               <span className="text-muted-foreground">Reimbursement</span>
               <span className="font-light tabular-nums">{formatCurrency(totals.reimbursement)}</span>
             </span>
             <span className="flex items-center gap-1.5 text-[10px]">
-              <span className="h-1.5 w-1.5 rounded-full bg-violet-500/70 shrink-0" />
+              <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', typeAccent['Others'].dot)} />
               <span className="text-muted-foreground">Others</span>
               <span className="font-light tabular-nums">{formatCurrency(totals.others)}</span>
             </span>
@@ -323,19 +335,18 @@ export function IncomePanel() {
           editingId ? 'bg-muted/20' : 'bg-muted/10',
         )}
       >
-        {/* Panel header */}
+        {/* Panel header — signals mode */}
         <div
           className={cn(
             'flex items-center gap-2 px-3 py-2.5 transition-colors',
-            editingId ? 'bg-primary/5 ' : 'bg-transparent',
+            editingId ? 'bg-primary/5' : 'bg-transparent',
           )}
         >
-          {editingId ? (
-            <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
-          ) : (
-            <PlusCircle className="size-3 text-muted-foreground/50 shrink-0" />
-          )}
-          <h3 className={cn('text-xs font-semibold', editingId ? 'text-primary' : 'text-muted-foreground')}>
+          {editingId
+            ? <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+            : <PlusCircle className="size-3 text-muted-foreground/50 shrink-0" />
+          }
+          <h3 className={cn('text-sm font-semibold', editingId ? 'text-primary' : 'text-muted-foreground')}>
             {editingId ? 'Editing Income' : 'New Income Entry'}
           </h3>
         </div>
@@ -356,7 +367,7 @@ export function IncomePanel() {
           />
           <div className="grid grid-cols-[1fr_100px] gap-1.5">
             <FloatingInput
-              label="Receipt/Ref"
+              label="Receipt / Ref"
               value={draft.receipt}
               onChange={(e) => setDraft((s) => ({ ...s, receipt: e.target.value }))}
             />
@@ -374,23 +385,34 @@ export function IncomePanel() {
             onChange={(e) => setDraft((s) => ({ ...s, amount: e.target.value }))}
           />
 
+          {/* Action buttons — conditional visibility */}
           {(isDirty || editingId) && (
             <div className="pt-0.5 space-y-1.5">
               <div className="flex gap-1.5">
-                {canSave && (
-                  <ActionTooltip label={editingId ? 'Update row' : 'Save row'} shortcut={`${kb.save()} · ${kb.saveAlso()}`}>
+                {!editingId && canSave && (
+                  <ActionTooltip label="Save row" shortcut={`${kb.save()} · ${kb.saveAlso()}`}>
                     <Button type="button" onClick={onSave} className="flex-1 text-xs h-7">
-                      {editingId ? 'Update' : 'Save Entry'}
+                      Save Entry
                     </Button>
                   </ActionTooltip>
                 )}
-                <ActionTooltip label="Cancel" shortcut={kb.cancel()}>
-                  <Button type="button" variant="outline" onClick={reset} className="px-3 text-xs h-7">
-                    Cancel
-                  </Button>
-                </ActionTooltip>
+                {editingId && (
+                  <ActionTooltip label="Update row" shortcut={`${kb.save()} · ${kb.saveAlso()}`}>
+                    <Button type="button" onClick={onSave} className="flex-1 text-xs h-7">
+                      Update
+                    </Button>
+                  </ActionTooltip>
+                )}
+                {(editingId || isDirty) && (
+                  <ActionTooltip label="Cancel" shortcut={kb.cancel()}>
+                    <Button type="button" variant="outline" onClick={reset} className="px-3 text-xs h-7">
+                      Cancel
+                    </Button>
+                  </ActionTooltip>
+                )}
               </div>
 
+              {/* Delete — separated, full width */}
               {editingId && (
                 <ActionTooltip label="Delete current row" shortcut={kb.deleteRow()}>
                   <Button
@@ -408,11 +430,7 @@ export function IncomePanel() {
           )}
         </div>
       </section>
+
     </div>
   )
 }
-
-
-
-
-

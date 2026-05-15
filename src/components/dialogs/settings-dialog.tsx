@@ -25,19 +25,10 @@ export function SettingsDialog({ open, onOpenChange, onQuickTheme, currentTheme 
         </DialogHeader>
 
         <div className="grid gap-4">
-          <div className="grid gap-2 rounded-md border p-3">
+          <div className="grid gap-2 p-3 border rounded-md">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium">Global dark mode</p>
               <Switch checked={currentTheme === 'dark'} onCheckedChange={(v) => onQuickTheme(v ? 'dark' : 'light')} />
-            </div>
-            
-            {/* NEW: Sidebar Always Dark Option */}
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Sidebar always dark</p>
-              <Switch 
-                checked={settings.sidebarAlwaysDark || false} 
-                onCheckedChange={(v) => setSettings((s) => ({ ...s, sidebarAlwaysDark: v }))} 
-              />
             </div>
             
             <div className="flex items-center justify-between">
@@ -50,7 +41,7 @@ export function SettingsDialog({ open, onOpenChange, onQuickTheme, currentTheme 
             </div>
           </div>
 
-          <div className="grid gap-3 rounded-md border p-3 sm:grid-cols-2">
+          <div className="grid gap-3 p-3 border rounded-md sm:grid-cols-2">
             <label className="grid gap-1 text-xs text-muted-foreground">
               Cashier name
               <FloatingInput label="Cashier name" value={settings.cashierName} onChange={(e) => setSettings((s) => ({ ...s, cashierName: e.target.value }))} />
@@ -67,7 +58,7 @@ export function SettingsDialog({ open, onOpenChange, onQuickTheme, currentTheme 
             </label>
           </div>
 
-          <div className="grid gap-2 rounded-md border p-3">
+          <div className="grid gap-2 p-3 border rounded-md">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium">Highlight variance</p>
               <Switch checked={settings.highlightVariance} onCheckedChange={(v) => setSettings((s) => ({ ...s, highlightVariance: v }))} />

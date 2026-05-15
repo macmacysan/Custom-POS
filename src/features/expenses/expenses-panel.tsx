@@ -66,7 +66,18 @@ export function ExpensesPanel() {
   const totals = summarizeExpenses(expenses)
 
   // -- Sync logic (unchanged) --
-  const formatForSheet = React.useCallback(() => {
+  type ExpenseSheetRow = {
+    rowId: number
+    date: string
+    type: string
+    description: string
+    receipt: string
+    category: string
+    vat: string
+    amount: number
+  }
+
+  const formatForSheet = React.useCallback((): ExpenseSheetRow[] => {
     const dateStr = currentDate.toISOString().split('T')[0]
     return expenses.map((exp, index) => ({
       rowId: index + 1, date: dateStr, type: exp.type,
@@ -75,7 +86,7 @@ export function ExpensesPanel() {
     }))
   }, [expenses, currentDate])
 
-  const syncToSheet = React.useCallback(async (overridePayload?: any[]) => {
+  const syncToSheet = React.useCallback(async (overridePayload?: ExpenseSheetRow[]) => {
     if (typeof window !== 'undefined' && window.electronAPI) {
       if (!navigator.onLine) { setSyncStatus('offline'); setSyncError('No internet connection'); return }
       setSyncStatus('syncing'); setSyncError(null)
@@ -83,8 +94,9 @@ export function ExpensesPanel() {
         const payload = overridePayload || formatForSheet()
         await window.electronAPI.syncExpenses(payload)
         setSyncStatus('success'); setLastSyncTime(new Date())
-      } catch (err: any) {
-        setSyncStatus('error'); setSyncError(err?.message || 'Unknown error during sync')
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err ?? 'Unknown error during sync')
+        setSyncStatus('error'); setSyncError(message)
       }
     }
   }, [formatForSheet, setSyncStatus, setSyncError, setLastSyncTime])
@@ -264,7 +276,7 @@ export function ExpensesPanel() {
                               <TooltipTrigger asChild>
                                 <span className="block w-full text-left truncate cursor-default">{row.description}</span>
                               </TooltipTrigger>
-                              <TooltipContent side="bottom" align="start" className="max-w-[300px] whitespace-normal break-words">
+                              <TooltipContent side="bottom" align="start" className="max-w-75 whitespace-normal wrap-break-word">
                                 {row.description}
                               </TooltipContent>
                             </Tooltip>
@@ -287,7 +299,7 @@ export function ExpensesPanel() {
                             <TooltipTrigger asChild>
                               <span className="block w-full text-[11px] text-muted-foreground truncate cursor-default">{row.category}</span>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom" align="start" className="max-w-[300px] whitespace-normal break-words">
+                            <TooltipContent side="bottom" align="start" className="max-w-75 whitespace-normal wrap-break-word">
                               {row.category}
                             </TooltipContent>
                           </Tooltip>

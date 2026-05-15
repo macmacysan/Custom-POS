@@ -27,26 +27,31 @@ const financeGroups: FinanceType[] = [
   'Skyro',
 ]
 
-const typeAccent: Record<FinanceType, { border: string; badge: string; header: string }> = {
+// Per-type accent: left-border color + subtle tints
+const typeAccent: Record<FinanceType, { border: string; badge: string; header: string; dot: string }> = {
   Nueva: {
     border: 'border-l-blue-500/60',
     badge: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
     header: 'bg-blue-500/5 text-blue-700 dark:text-blue-300',
+    dot: 'bg-blue-500/70',
   },
   'Home Credit': {
     border: 'border-l-emerald-500/60',
     badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
     header: 'bg-emerald-500/5 text-emerald-700 dark:text-emerald-300',
+    dot: 'bg-emerald-500/70',
   },
   'Salmon Credit': {
     border: 'border-l-amber-500/60',
     badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
     header: 'bg-amber-500/5 text-amber-700 dark:text-amber-300',
+    dot: 'bg-amber-500/70',
   },
   Skyro: {
     border: 'border-l-violet-500/60',
     badge: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
     header: 'bg-violet-500/5 text-violet-700 dark:text-violet-300',
+    dot: 'bg-violet-500/70',
   },
 }
 
@@ -198,13 +203,15 @@ export function PaymentsPanel() {
   const canSave = draft.accountName.trim().length > 0
 
   return (
-    <div className="grid h-full grid-cols-1 lg:grid-cols-[1fr_235px]">
+    <div className="grid h-full grid-cols-1 lg:grid-cols-[1fr_280px]">
+
       {/* ── Table section ── */}
       <section className="flex flex-col min-h-0 overflow-hidden bg-card">
+
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1.5 border-b">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold tracking-tight">Payments Panel</h2>
+            <h2 className="text-sm font-semibold tracking-tight">Finance Payments</h2>
           </div>
           <div className="flex items-center gap-0.5">
             {canUndo('payments') && (
@@ -253,17 +260,17 @@ export function PaymentsPanel() {
 
         {/* Table */}
         <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:hsl(var(--border))_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-border/60">
-          <div className="min-w-[1200px]">
+          <div className="min-w-300">
             <Table>
               <TableHeader>
                 <TableRow className="border-b-2 hover:bg-transparent border-border/60">
-                  <TableHead className="h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-3">Provider</TableHead>
+                  <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-3">Provider</TableHead>
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Type</TableHead>
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Terms</TableHead>
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Date</TableHead>
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Account</TableHead>
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Item</TableHead>
-                  <TableHead className="text-right h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Total</TableHead>
+                  <TableHead className="text-right h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pr-0">Total</TableHead>
                   <TableHead className="text-right h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Down</TableHead>
                   <TableHead className="text-right h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Balance</TableHead>
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">CR#</TableHead>
@@ -280,8 +287,11 @@ export function PaymentsPanel() {
 
                 return (
                   <TableBody key={finance}>
+
                     {/* Group header row */}
                     <TableRow className={cn('hover:bg-transparent border-none', accent.header)}>
+
+                      {/* 1. Left Side (Spans Provider → Item) */}
                       <TableCell colSpan={6} className="py-1 pl-3">
                         <div className="flex items-center gap-2">
                           <span className={cn('text-[9px] font-bold uppercase tracking-widest px-1.5 py-px rounded-sm', accent.badge)}>
@@ -292,13 +302,20 @@ export function PaymentsPanel() {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-1 text-right">
+
+                      {/* 2. Subtotal Column (Locks strictly to the Total column) */}
+                      <TableCell className="py-1 pr-0 text-right">
                         <span className="text-[10px] font-semibold font-mono tabular-nums opacity-60">
                           {formatCurrency(groupTotal)}
                         </span>
                       </TableCell>
+
+                      {/* 3. Filler for Down, Balance, CR#, Method */}
                       <TableCell colSpan={4} />
+
+                      {/* 4. Action Spacer */}
                       <TableCell className="w-10 py-1"></TableCell>
+
                     </TableRow>
 
                     {/* Data rows */}
@@ -318,18 +335,21 @@ export function PaymentsPanel() {
                           <span className="bg-muted/50 rounded px-1.5 py-px text-[10px]">{row.type}</span>
                         </TableCell>
                         <TableCell className="py-0 text-[11px] text-muted-foreground font-mono">
-                          {row.terms || '-'}
+                          {row.terms
+                            ? <span className="bg-muted/50 rounded px-1 py-px text-[10px]">{row.terms}</span>
+                            : <span className="select-none text-muted-foreground/35">—</span>
+                          }
                         </TableCell>
                         <TableCell className="py-0 text-[11px] text-muted-foreground font-mono">
-                          {row.date || '-'}
+                          {row.date || <span className="select-none text-muted-foreground/35">—</span>}
                         </TableCell>
-                        <TableCell className="py-0 text-xs max-w-[150px] truncate">
+                        <TableCell className="py-0 text-xs max-w-37.5 truncate">
                           {row.accountName}
                         </TableCell>
-                        <TableCell className="py-0 text-xs max-w-[150px] truncate text-muted-foreground">
-                          {row.item}
+                        <TableCell className="py-0 text-xs max-w-37.5 truncate text-muted-foreground">
+                          {row.item || <span className="select-none text-muted-foreground/35">—</span>}
                         </TableCell>
-                        <TableCell className="py-0 text-right tabular-nums">
+                        <TableCell className="py-0 pr-0 text-right tabular-nums">
                           <span className="font-mono text-xs font-medium">{formatCurrency(row.grandTotal)}</span>
                         </TableCell>
                         <TableCell className="py-0 text-right tabular-nums text-muted-foreground/70">
@@ -338,12 +358,19 @@ export function PaymentsPanel() {
                         <TableCell className="py-0 text-right tabular-nums text-muted-foreground/70">
                           <span className="font-mono text-[11px]">{formatCurrency(row.balance)}</span>
                         </TableCell>
-                        <TableCell className="py-0 text-[11px] font-mono">{row.cr || '-'}</TableCell>
-                        <TableCell className="py-0 text-[11px] text-muted-foreground">{row.paymentMethod}</TableCell>
+                        <TableCell className="py-0 text-[11px] font-mono">
+                          {row.cr
+                            ? <span className="bg-muted/50 rounded px-1 py-px text-[10px]">{row.cr}</span>
+                            : <span className="select-none text-muted-foreground/35">—</span>
+                          }
+                        </TableCell>
+                        <TableCell className="py-0 text-[11px] text-muted-foreground">
+                          {row.paymentMethod || <span className="select-none text-muted-foreground/35">—</span>}
+                        </TableCell>
 
-                        {/* Actions */}
+                        {/* Dedicated Actions Column (Only visible on hover) */}
                         <TableCell className="w-12 px-0 py-0">
-                          <div className="flex items-center justify-end gap-px pr-2 transition-opacity opacity-0 group-hover:opacity-100">
+                          <div className="flex items-center justify-end gap-px transition-opacity opacity-0 group-hover:opacity-100">
                             <Button
                               variant="ghost"
                               size="icon-xs"
@@ -367,6 +394,7 @@ export function PaymentsPanel() {
                   </TableBody>
                 )
               })}
+
               {payments.length === 0 && (
                 <TableBody>
                   <TableRow className="hover:bg-transparent">
@@ -390,15 +418,15 @@ export function PaymentsPanel() {
               const accent = typeAccent[finance]
               return (
                 <span key={finance} className="flex items-center gap-1.5 text-[10px]">
-                  <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', accent.badge.split(' ')[0].replace('bg-', 'bg-').replace('/10', '/70'))} />
+                  <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', accent.dot)} />
                   <span className="text-muted-foreground">{finance}</span>
                   <span className="font-light tabular-nums">{formatCurrency(total)}</span>
                 </span>
               )
             })}
             <span className="ml-auto flex items-center gap-1.5 text-[10px]">
-              <span className="font-semibold text-muted-foreground">Grand Total</span>
-              <span className="text-xs font-bold tabular-nums">
+              <span className="text-muted-foreground">Grand Total</span>
+              <span className="font-light tabular-nums">
                 {formatCurrency(payments.reduce((sum, p) => sum + p.grandTotal, 0))}
               </span>
             </span>
@@ -413,25 +441,26 @@ export function PaymentsPanel() {
           editingId ? 'bg-muted/20' : 'bg-muted/10',
         )}
       >
-        {/* Panel header */}
+        {/* Panel header — signals mode */}
         <div
           className={cn(
             'flex items-center gap-2 px-3 py-2.5 transition-colors',
-            editingId ? 'bg-primary/5 ' : 'bg-transparent',
+            editingId ? 'bg-primary/5' : 'bg-transparent',
           )}
         >
-          {editingId ? (
-            <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
-          ) : (
-            <PlusCircle className="size-3 text-muted-foreground/50 shrink-0" />
-          )}
+          {editingId
+            ? <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+            : <PlusCircle className="size-3 text-muted-foreground/50 shrink-0" />
+          }
           <h3 className={cn('text-sm font-semibold', editingId ? 'text-primary' : 'text-muted-foreground')}>
             {editingId ? 'Editing Payment' : 'New Payment'}
           </h3>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2.5 py-2.5 space-y-2 [scrollbar-width:thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:hsl(var(--border))_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-border/60">
-          <div className="grid grid-cols-2 gap-2">
+        <div className="flex-1 overflow-y-auto px-2.5 py-2 space-y-1.5 [scrollbar-width:thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:hsl(var(--border))_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-border/60">
+
+          {/* ── Provider & Type ── */}
+          <div className="grid grid-cols-2 gap-1.5">
             <FloatingSelect
               label="Finance"
               value={draft.finance}
@@ -448,7 +477,8 @@ export function PaymentsPanel() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          {/* ── Terms ── */}
+          <div className="grid grid-cols-2 gap-1.5">
             <FloatingSelect
               label="Frequency"
               value={draft.termFrequency}
@@ -476,13 +506,13 @@ export function PaymentsPanel() {
             )}
           </div>
 
+          {/* ── Date & Account ── */}
           <FloatingInput
             label="Date"
             type="date"
             value={draft.date}
             onChange={(e) => setDraft((p) => ({ ...p, date: e.target.value }))}
           />
-
           <FloatingInput
             id="primary-input"
             label="Account Name"
@@ -490,24 +520,24 @@ export function PaymentsPanel() {
             onChange={(e) => setDraft((p) => ({ ...p, accountName: e.target.value }))}
           />
 
-          <div className="grid grid-cols-4 gap-2">
+          {/* ── Item ── */}
+          <div className="grid grid-cols-[52px_1fr] gap-1.5">
             <FloatingInput
               label="Qty"
-              containerClassName="col-span-1"
               value={draft.qty}
               onChange={(e) => setDraft((p) => ({ ...p, qty: e.target.value }))}
               disabled={isPaymentType}
             />
             <FloatingInput
               label="Item"
-              containerClassName="col-span-3"
               value={draft.item}
               onChange={(e) => setDraft((p) => ({ ...p, item: e.target.value }))}
               disabled={isPaymentType}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          {/* ── Pricing ── */}
+          <div className="grid grid-cols-2 gap-1.5">
             <FloatingNumberInput
               label="Unit Price"
               value={draft.unitPrice}
@@ -522,7 +552,8 @@ export function PaymentsPanel() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          {/* ── Down & Balance ── */}
+          <div className="grid grid-cols-2 gap-1.5">
             <FloatingNumberInput
               label="Down Payment"
               value={draft.down}
@@ -535,7 +566,8 @@ export function PaymentsPanel() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          {/* ── CR# & Late Fee ── */}
+          <div className="grid grid-cols-2 gap-1.5">
             <FloatingInput
               label="CR#"
               value={draft.cr}
@@ -549,6 +581,7 @@ export function PaymentsPanel() {
             />
           </div>
 
+          {/* ── Method & Notes ── */}
           <FloatingSelect
             label="Method"
             value={draft.paymentMethod}
@@ -556,30 +589,40 @@ export function PaymentsPanel() {
             options={paymentMethods.map((m) => ({ label: m, value: m }))}
             triggerClassName="w-full text-left"
           />
-
           <FloatingInput
             label="Notes"
             value={draft.notes}
             onChange={(e) => setDraft((p) => ({ ...p, notes: e.target.value }))}
           />
 
+          {/* Action buttons — conditional visibility */}
           {(isDirty || editingId) && (
             <div className="pt-0.5 space-y-1.5">
               <div className="flex gap-1.5">
-                {canSave && (
-                  <ActionTooltip label={editingId ? 'Update row' : 'Save row'} shortcut={`${kb.save()} · ${kb.saveAlso()}`}>
+                {!editingId && canSave && (
+                  <ActionTooltip label="Save row" shortcut={`${kb.save()} · ${kb.saveAlso()}`}>
                     <Button type="button" onClick={onSave} className="flex-1 text-xs h-7">
-                      {editingId ? 'Update' : 'Save Entry'}
+                      Save Entry
                     </Button>
                   </ActionTooltip>
                 )}
-                <ActionTooltip label="Cancel" shortcut={kb.cancel()}>
-                  <Button type="button" variant="outline" onClick={reset} className="px-3 text-xs h-7">
-                    Cancel
-                  </Button>
-                </ActionTooltip>
+                {editingId && (
+                  <ActionTooltip label="Update row" shortcut={`${kb.save()} · ${kb.saveAlso()}`}>
+                    <Button type="button" onClick={onSave} className="flex-1 text-xs h-7">
+                      Update
+                    </Button>
+                  </ActionTooltip>
+                )}
+                {(editingId || isDirty) && (
+                  <ActionTooltip label="Cancel" shortcut={kb.cancel()}>
+                    <Button type="button" variant="outline" onClick={reset} className="px-3 text-xs h-7">
+                      Cancel
+                    </Button>
+                  </ActionTooltip>
+                )}
               </div>
 
+              {/* Delete — separated, full width */}
               {editingId && (
                 <ActionTooltip label="Delete current row" shortcut={kb.deleteRow()}>
                   <Button
@@ -597,6 +640,7 @@ export function PaymentsPanel() {
           )}
         </div>
       </section>
+
     </div>
   )
 }
