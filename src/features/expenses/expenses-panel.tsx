@@ -163,7 +163,7 @@ export function ExpensesPanel() {
     <div className="grid h-full grid-cols-1 lg:grid-cols-[1fr_235px]">
 
       {/* ── Table section ── */}
-      <section className="flex flex-col min-h-0 overflow-hidden bg-card">
+      <section className="flex flex-col w-full min-h-0 overflow-hidden bg-card">
 
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1.5 border-b">
@@ -207,7 +207,7 @@ export function ExpensesPanel() {
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">VAT</TableHead>
                 )}
                 <TableHead className="text-right h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pr-0">Amount</TableHead>
-                    <TableHead className="w-10"></TableHead>
+                <TableHead className="w-10"></TableHead>
               </TableRow>
             </TableHeader>
 
@@ -228,7 +228,7 @@ export function ExpensesPanel() {
                 >
                   {/* Group header row */}
                   <TableRow className={cn('hover:bg-transparent border-none', accent.header)}>
-                    
+
                     {/* 1. Left Side (Spans Desc, Receipt, Category, and VAT) */}
                     <TableCell colSpan={settings.showVatColumn ? 4 : 3} className="py-1 pl-3">
                       <div className="flex items-center gap-2">
@@ -276,7 +276,7 @@ export function ExpensesPanel() {
                               <TooltipTrigger asChild>
                                 <span className="block w-full text-left truncate cursor-default">{row.description}</span>
                               </TooltipTrigger>
-                              <TooltipContent side="bottom" align="start" className="max-w-75 whitespace-normal wrap-break-word">
+                              <TooltipContent side="bottom" align="start" className="whitespace-normal max-w-75 wrap-break-word">
                                 {row.description}
                               </TooltipContent>
                             </Tooltip>
@@ -299,7 +299,7 @@ export function ExpensesPanel() {
                             <TooltipTrigger asChild>
                               <span className="block w-full text-[11px] text-muted-foreground truncate cursor-default">{row.category}</span>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom" align="start" className="max-w-75 whitespace-normal wrap-break-word">
+                            <TooltipContent side="bottom" align="start" className="whitespace-normal max-w-75 wrap-break-word">
                               {row.category}
                             </TooltipContent>
                           </Tooltip>

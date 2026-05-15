@@ -1,7 +1,6 @@
 
 import { X } from 'lucide-react'
 
-import { TopNav } from '@/components/layout/top-nav'
 import { WorkspaceNavigationSidebar } from '@/components/layout/workspace-navigation-sidebar'
 import { WorkspaceTabs } from '@/components/workspace/workspace-tabs'
 import { MasterCalculationsSidebar } from '@/features/sidebar/master-calculations-sidebar'
@@ -42,16 +41,13 @@ function MobileSidebarSheet() {
 
 export function AppLayout() {
   return (
-    <div className="flex w-full h-screen overflow-hidden bg-background bg-linear-to-br from-background via-background to-muted/30">
-      <WorkspaceNavigationSidebar className="hidden w-48 border-r shrink-0 border-sidebar-border bg-sidebar/80 backdrop-blur-xl lg:flex" />
-      <MasterCalculationsSidebar />
-      <div className="relative flex flex-col flex-1 h-full min-w-0 overflow-hidden bg-background/50 backdrop-blur-sm">
-        <TopNav />
-        <main className="flex-1 overflow-hidden">
-          <div className="flex flex-col h-full overflow-hidden">
-            <WorkspaceTabs />
-          </div>
+    <div className="flex flex-col w-full h-screen overflow-hidden bg-background bg-linear-to-br from-background via-background to-muted/30">
+      <div className="border flex flex-1 min-h-0 overflow-hidden">
+        <WorkspaceNavigationSidebar className="hidden w-48 shrink-0 bg-sidebar/80 backdrop-blur-xl lg:flex" />
+        <main className="relative flex flex-col flex-1 h-full min-w-0 overflow-hidden bg-background/50 backdrop-blur-sm">
+          <WorkspaceTabs />
         </main>
+        <MasterCalculationsSidebar />
       </div>
       <MobileSidebarSheet />
     </div>
