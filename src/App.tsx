@@ -3,6 +3,7 @@ import { useTheme } from 'next-themes'
 
 import { AppLayout } from '@/components/layout/app-layout'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { SidebarProvider } from '@/components/ui/sidebar'
 import { PosStoreProvider, usePosStore } from '@/state/pos-store'
 import { AuthScreen } from '@/features/auth/auth-screen'
 import { WORKSPACE_TAB_HOTKEYS, TAB_UNDO_DATASET } from '@/lib/nav-sections'
@@ -134,8 +135,10 @@ function AppContent() {
 
   return (
     <TooltipProvider delayDuration={350}>
-      <KeyboardShortcuts />
-      <AppLayout />
+      <SidebarProvider>
+        <KeyboardShortcuts />
+        <AppLayout />
+      </SidebarProvider>
     </TooltipProvider>
   )
 }

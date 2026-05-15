@@ -22,9 +22,16 @@ function createWindow() {
 
   // Load from Vite dev server if running in dev mode
   if (process.env.VITE_DEV_SERVER_URL) {
+    console.log('Loading from dev server:', process.env.VITE_DEV_SERVER_URL)
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
   } else {
+    console.log('VITE_DEV_SERVER_URL not set, loading from file')
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
+  }
+
+  // Open DevTools in development
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.webContents.openDevTools()
   }
 }
 

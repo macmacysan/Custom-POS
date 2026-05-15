@@ -15,8 +15,14 @@ function createWindow() {
 			nodeIntegration: false
 		}
 	});
-	if (process.env.VITE_DEV_SERVER_URL) mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-	else mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
+	if (process.env.VITE_DEV_SERVER_URL) {
+		console.log("Loading from dev server:", process.env.VITE_DEV_SERVER_URL);
+		mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
+	} else {
+		console.log("VITE_DEV_SERVER_URL not set, loading from file");
+		mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
+	}
+	if (process.env.NODE_ENV === "development") mainWindow.webContents.openDevTools();
 }
 app.whenReady().then(() => {
 	createWindow();

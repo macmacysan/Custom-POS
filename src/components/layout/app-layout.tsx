@@ -42,7 +42,7 @@ function MobileSidebarSheet() {
 
 export function AppLayout() {
   return (
-    <div className="flex w-full h-screen overflow-hidden bg-background bg-gradient-to-br from-background via-background to-muted/30">
+    <div className="flex w-full h-screen overflow-hidden bg-background bg-linear-to-br from-background via-background to-muted/30">
       <WorkspaceNavigationSidebar className="hidden w-48 border-r shrink-0 border-sidebar-border bg-sidebar/80 backdrop-blur-xl lg:flex" />
       <MasterCalculationsSidebar />
       <div className="relative flex flex-col flex-1 h-full min-w-0 overflow-hidden bg-background/50 backdrop-blur-sm">
