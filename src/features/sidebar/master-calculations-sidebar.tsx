@@ -15,7 +15,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Plus, Settings2 } from 'lucide-react'
+import { Plus, Settings2, Moon, Sun } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import { deductionLabels, denominationValues } from '@/state/seed'
 import { usePosStore } from '@/state/pos-store'
 import { formatCurrency, formatNumber, parseMoney } from '@/lib/money'
@@ -110,6 +111,7 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
 
   const [deductionsOpen, setDeductionsOpen] = React.useState(false)
   const [denomOpen, setDenomOpen] = React.useState(false)
+  const { setTheme, resolvedTheme } = useTheme()
 
   const [visibleReceipts, setVisibleReceipts] = React.useState<Record<ReceiptField, boolean>>({
     salesInvoice: false,
@@ -139,13 +141,24 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
         className={cn(
           'flex-col w-64 h-full shrink-0 border-r bg-background transition-all duration-300',
           embeddedInSheet ? 'flex min-h-0' : 'hidden lg:flex',
+          usePosStore().settings.sidebarAlwaysDark && 'dark'
         )}
       >
         {/* Header */}
         {!embeddedInSheet && (
-          <div className="px-3 py-2 border-b shrink-0 bg-muted/30">
-            <h2 className="text-xs font-semibold tracking-tight">Cashier Summary</h2>
-            <p className="text-[10px] text-muted-foreground">Daily financial audit</p>
+          <div className="flex items-center justify-between px-3 py-2 border-b shrink-0 bg-muted/30">
+            <div>
+              <h2 className="text-xs font-semibold tracking-tight">Cashier Summary</h2>
+              <p className="text-[10px] text-muted-foreground">Daily financial audit</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              className="size-7 text-muted-foreground hover:text-foreground"
+            >
+              {resolvedTheme === 'dark' ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />}
+            </Button>
           </div>
         )}
 

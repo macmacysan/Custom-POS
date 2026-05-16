@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Pencil, Trash2, Undo2, Redo2, PlusCircle } from 'lucide-react'
+import { Pencil, Trash2, GripVertical, Undo2, Redo2, PlusCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { ActionTooltip } from '@/components/ui/action-tooltip'
@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 import { usePosStore } from '@/state/pos-store'
 import { formatCurrency, parseMoney } from '@/lib/money'
@@ -325,6 +326,35 @@ export function PaymentsPanel() {
     reset()
   }
 
+  function onDrop(targetFinance: FinanceType, id: string) {
+    pushHistory('payments')
+    setPayments((prev: PaymentEntry[]) => {
+      const updated = prev.map((row) => (row.id === id ? { ...row, finance: targetFinance } : row))
+      const payload = updated.map((item, i) => ({
+        rowId: i + 1,
+        branch: selectedBranch ?? '',
+        syncDate: currentDate.toISOString().split('T')[0],
+        finance: item.finance,
+        type: item.type,
+        terms: item.terms,
+        date: item.date,
+        accountName: item.accountName,
+        qty: item.qty,
+        item: item.item,
+        unitPrice: item.unitPrice,
+        grandTotal: item.grandTotal,
+        down: item.down,
+        balance: item.balance,
+        cr: item.cr,
+        lateFee: item.lateFee,
+        paymentMethod: item.paymentMethod,
+        notes: item.notes,
+      }))
+      setTimeout(() => syncToSheet(payload), 0)
+      return updated
+    })
+  }
+
   useFormShortcuts({
     onSave,
     onReset: reset,
@@ -336,10 +366,10 @@ export function PaymentsPanel() {
   const canSave = draft.accountName.trim().length > 0
 
   return (
-    <div className="grid h-full grid-cols-1 lg:grid-cols-[1fr_280px]">
+    <div className="grid h-full grid-cols-1 lg:grid-cols-[1fr_235px]">
 
       {/* ── Table section ── */}
-      <section className="flex flex-col min-h-0 overflow-hidden bg-card">
+      <section className="flex flex-col min-h-0 w-full overflow-hidden bg-card">
 
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1.5 border-b">
@@ -393,15 +423,14 @@ export function PaymentsPanel() {
 
         {/* Table */}
         <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:hsl(var(--border))_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-border/60">
-          <div className="min-w-300">
+          <div className="min-w-[800px]">
             <Table>
               <TableHeader>
                 <TableRow className="border-b-2 hover:bg-transparent border-border/60">
-                  <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-3">Provider</TableHead>
+                  <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pl-8">Account</TableHead>
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Type</TableHead>
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Terms</TableHead>
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Date</TableHead>
-                  <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Account</TableHead>
                   <TableHead className="h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Item</TableHead>
                   <TableHead className="text-right h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 pr-0">Total</TableHead>
                   <TableHead className="text-right h-7 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Down</TableHead>
@@ -419,13 +448,20 @@ export function PaymentsPanel() {
                 const groupTotal = rows.reduce((sum, r) => sum + r.grandTotal, 0)
 
                 return (
-                  <TableBody key={finance}>
+                  <TableBody
+                    key={finance}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      const id = e.dataTransfer.getData('text/plain')
+                      if (id) onDrop(finance, id)
+                    }}
+                  >
 
                     {/* Group header row */}
                     <TableRow className={cn('hover:bg-transparent border-none', accent.header)}>
 
-                      {/* 1. Left Side (Spans Provider → Item) */}
-                      <TableCell colSpan={6} className="py-1 pl-3">
+                      {/* 1. Left Side (Spans Account → Item) */}
+                      <TableCell colSpan={5} className="py-1 pl-3">
                         <div className="flex items-center gap-2">
                           <span className={cn('text-[9px] font-bold uppercase tracking-widest px-1.5 py-px rounded-sm', accent.badge)}>
                             {finance}
@@ -462,26 +498,59 @@ export function PaymentsPanel() {
                             ? 'bg-muted/50 border-l-primary'
                             : 'border-l-transparent hover:border-l-current',
                         )}
+                        draggable
+                        onDragStart={(e) => e.dataTransfer.setData('text/plain', row.id)}
                       >
-                        <TableCell className="py-0 pl-3 text-xs">{row.finance}</TableCell>
+                        {/* Account Name with Drag Handle */}
+                        <TableCell className="py-0 pl-3 text-xs w-48 max-w-48">
+                          <div className="flex items-center gap-1.5">
+                            <GripVertical className="shrink-0 size-3 text-muted-foreground/25 cursor-grab active:cursor-grabbing" />
+                            <TooltipProvider delayDuration={300}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="block w-full text-left truncate cursor-default">{row.accountName}</span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start" className="whitespace-normal max-w-75 wrap-break-word">
+                                  {row.accountName}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        </TableCell>
+
                         <TableCell className="py-0 text-xs">
                           <span className="bg-muted/50 rounded px-1.5 py-px text-[10px]">{row.type}</span>
                         </TableCell>
+
                         <TableCell className="py-0 text-[11px] text-muted-foreground font-mono">
                           {row.terms
                             ? <span className="bg-muted/50 rounded px-1 py-px text-[10px]">{row.terms}</span>
                             : <span className="select-none text-muted-foreground/35">—</span>
                           }
                         </TableCell>
+
                         <TableCell className="py-0 text-[11px] text-muted-foreground font-mono">
                           {row.date || <span className="select-none text-muted-foreground/35">—</span>}
                         </TableCell>
-                        <TableCell className="py-0 text-xs max-w-37.5 truncate">
-                          {row.accountName}
+
+                        {/* Item with Tooltip */}
+                        <TableCell className="py-0 text-xs w-32 max-w-32 text-muted-foreground">
+                          {row.item ? (
+                            <TooltipProvider delayDuration={300}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="block w-full text-left truncate cursor-default">{row.item}</span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start" className="whitespace-normal max-w-75 wrap-break-word">
+                                  {row.item}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : (
+                            <span className="select-none text-muted-foreground/35">—</span>
+                          )}
                         </TableCell>
-                        <TableCell className="py-0 text-xs max-w-37.5 truncate text-muted-foreground">
-                          {row.item || <span className="select-none text-muted-foreground/35">—</span>}
-                        </TableCell>
+
                         <TableCell className="py-0 pr-0 text-right tabular-nums">
                           <span className="font-mono text-xs font-medium">{formatCurrency(row.grandTotal)}</span>
                         </TableCell>
@@ -491,12 +560,14 @@ export function PaymentsPanel() {
                         <TableCell className="py-0 text-right tabular-nums text-muted-foreground/70">
                           <span className="font-mono text-[11px]">{formatCurrency(row.balance)}</span>
                         </TableCell>
+
                         <TableCell className="py-0 text-[11px] font-mono">
                           {row.cr
                             ? <span className="bg-muted/50 rounded px-1 py-px text-[10px]">{row.cr}</span>
                             : <span className="select-none text-muted-foreground/35">—</span>
                           }
                         </TableCell>
+
                         <TableCell className="py-0 text-[11px] text-muted-foreground">
                           {row.paymentMethod || <span className="select-none text-muted-foreground/35">—</span>}
                         </TableCell>
@@ -531,7 +602,7 @@ export function PaymentsPanel() {
               {payments.length === 0 && (
                 <TableBody>
                   <TableRow className="hover:bg-transparent">
-                    <TableCell colSpan={12} className="py-10 text-xs text-center text-muted-foreground/55">
+                    <TableCell colSpan={11} className="py-10 text-xs text-center text-muted-foreground/55">
                       No payment entries yet. Add your first record on the right panel.
                     </TableCell>
                   </TableRow>
@@ -590,7 +661,7 @@ export function PaymentsPanel() {
           </h3>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2.5 py-2 space-y-1.5 [scrollbar-width:thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:hsl(var(--border))_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-border/60">
+        <div className="flex-1 overflow-y-auto px-2.5 py-2 space-y-2 [scrollbar-width:thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:hsl(var(--border))_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-border/60">
 
           {/* ── Provider & Type ── */}
           <div className="grid grid-cols-2 gap-1.5">
@@ -654,7 +725,7 @@ export function PaymentsPanel() {
           />
 
           {/* ── Item ── */}
-          <div className="grid grid-cols-[52px_1fr] gap-1.5">
+          <div className="grid grid-cols-[60px_1fr] gap-1.5">
             <FloatingInput
               label="Qty"
               value={draft.qty}
@@ -755,7 +826,7 @@ export function PaymentsPanel() {
                 )}
               </div>
 
-              {/* Delete — separated, full width */}
+              {/* Delete — separated, full width, outline-destructive so it's visible but not alarming */}
               {editingId && (
                 <ActionTooltip label="Delete current row" shortcut={kb.deleteRow()}>
                   <Button

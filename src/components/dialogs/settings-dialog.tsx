@@ -1,4 +1,4 @@
-﻿import { ArrowUpDown } from 'lucide-react'
+import { ArrowUpDown } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
@@ -38,6 +38,10 @@ export function SettingsDialog({ open, onOpenChange, onQuickTheme, currentTheme 
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium">Show VAT column</p>
               <Switch checked={settings.showVatColumn} onCheckedChange={(v) => setSettings((s) => ({ ...s, showVatColumn: v }))} />
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">Always dark sidebar</p>
+              <Switch checked={settings.sidebarAlwaysDark} onCheckedChange={(v) => setSettings((s) => ({ ...s, sidebarAlwaysDark: v }))} />
             </div>
           </div>
 
