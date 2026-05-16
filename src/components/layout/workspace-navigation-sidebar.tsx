@@ -16,6 +16,7 @@ import {
   LogOut,
   SlidersHorizontal,
   UserCog,
+  Activity,
 } from "lucide-react"
 import { ActionTooltip } from "@/components/ui/action-tooltip"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -70,6 +71,7 @@ const tabIcons: Record<PosTab, typeof LayoutDashboard> = {
   payments: CreditCard,
   installment: CalendarDays,
   financing: Building2,
+  'sync-debug': Activity,
 }
 
 /* Section accent colours for left-bar indicator */
@@ -236,12 +238,20 @@ export function WorkspaceNavigationSidebar({
           <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-sidebar-foreground/30">
             Sync Debug
           </span>
-          <button 
-            onClick={clearSyncLogs}
-            className="text-[9px] text-sidebar-foreground/40 hover:text-primary transition-colors font-semibold"
-          >
-            Clear
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setActiveTab('sync-debug')}
+              className="text-[9px] text-primary hover:underline font-semibold"
+            >
+              Open Diagnostics
+            </button>
+            <button 
+              onClick={clearSyncLogs}
+              className="text-[9px] text-sidebar-foreground/40 hover:text-primary transition-colors font-semibold"
+            >
+              Clear
+            </button>
+          </div>
         </div>
         <div className="space-y-2.5 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
           {syncLogs.length === 0 ? (

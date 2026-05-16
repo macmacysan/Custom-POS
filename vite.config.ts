@@ -14,12 +14,37 @@ export default defineConfig({
       {
         // Main process entry file of the Electron App.
         entry: 'electron/main.ts',
+        vite: {
+          build: {
+            rollupOptions: {
+              output: {
+                format: 'cjs',
+                entryFileNames: '[name].cjs',
+              },
+            },
+          },
+          esbuild: {
+            format: 'cjs',
+          },
+        },
       },
       {
         entry: 'electron/preload.ts',
         onUpdate(args) {
-          // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete.
           args.reload()
+        },
+        vite: {
+          build: {
+            rollupOptions: {
+              output: {
+                format: 'cjs',
+                entryFileNames: '[name].cjs',
+              },
+            },
+          },
+          esbuild: {
+            format: 'cjs',
+          },
         },
       },
     ]),

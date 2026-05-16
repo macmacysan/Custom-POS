@@ -68,7 +68,7 @@ export function ChecksPanel() {
   const {
     checks, setChecks, pushHistory,
     undo, redo, canUndo, canRedo,
-    currentDate,
+    currentDate, selectedBranch,
     setSyncStatus, setSyncError, setLastSyncTime,
     addSyncLog,
   } = usePosStore()
@@ -80,6 +80,7 @@ export function ChecksPanel() {
   // -- Sync logic --
   type CheckSheetRow = {
     rowId: number
+    branch: string
     syncDate: string
     type: string
     bank: string
@@ -94,6 +95,7 @@ export function ChecksPanel() {
     const dateStr = currentDate.toISOString().split('T')[0]
     return checks.map((item, index) => ({
       rowId: index + 1,
+      branch: selectedBranch ?? '',
       syncDate: dateStr,
       type: item.type,
       bank: item.bank,
@@ -103,7 +105,7 @@ export function ChecksPanel() {
       recordDate: item.date,
       amount: item.amount,
     }))
-  }, [checks, currentDate])
+  }, [checks, currentDate, selectedBranch])
 
   const syncToSheet = React.useCallback(async (overridePayload?: CheckSheetRow[]) => {
     const payload = overridePayload || formatForSheet()
@@ -167,6 +169,7 @@ export function ChecksPanel() {
       const updated = editingId ? prev.map((x) => (x.id === editingId ? entry : x)) : [...prev, entry]
       const payload = updated.map((item, i) => ({
         rowId: i + 1,
+        branch: selectedBranch ?? '',
         syncDate: currentDate.toISOString().split('T')[0],
         type: item.type,
         bank: item.bank,
@@ -188,6 +191,7 @@ export function ChecksPanel() {
       const updated = prev.filter((row) => row.id !== id)
       const payload = updated.map((item, i) => ({
         rowId: i + 1,
+        branch: selectedBranch ?? '',
         syncDate: currentDate.toISOString().split('T')[0],
         type: item.type,
         bank: item.bank,

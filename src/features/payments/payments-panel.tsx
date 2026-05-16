@@ -107,7 +107,7 @@ export function PaymentsPanel() {
     redo,
     canUndo,
     canRedo,
-    currentDate,
+    currentDate, selectedBranch,
     setSyncStatus,
     setSyncError,
     setLastSyncTime,
@@ -120,6 +120,7 @@ export function PaymentsPanel() {
   // -- Sync logic --
   type PaymentSheetRow = {
     rowId: number
+    branch: string
     syncDate: string
     finance: string
     type: string
@@ -142,6 +143,7 @@ export function PaymentsPanel() {
     const dateStr = currentDate.toISOString().split('T')[0]
     return payments.map((item, index) => ({
       rowId: index + 1,
+      branch: selectedBranch ?? '',
       syncDate: dateStr,
       finance: item.finance,
       type: item.type,
@@ -159,7 +161,7 @@ export function PaymentsPanel() {
       paymentMethod: item.paymentMethod,
       notes: item.notes,
     }))
-  }, [payments, currentDate])
+  }, [payments, currentDate, selectedBranch])
 
   const syncToSheet = React.useCallback(async (overridePayload?: PaymentSheetRow[]) => {
     const payload = overridePayload || formatForSheet()
@@ -260,6 +262,7 @@ export function PaymentsPanel() {
       const updated = editingId ? prev.map((p) => (p.id === editingId ? next : p)) : [...prev, next]
       const payload = updated.map((item, i) => ({
         rowId: i + 1,
+        branch: selectedBranch ?? '',
         syncDate: currentDate.toISOString().split('T')[0],
         finance: item.finance,
         type: item.type,
@@ -290,6 +293,7 @@ export function PaymentsPanel() {
       const updated = prev.filter((p) => p.id !== id)
       const payload = updated.map((item, i) => ({
         rowId: i + 1,
+        branch: selectedBranch ?? '',
         syncDate: currentDate.toISOString().split('T')[0],
         finance: item.finance,
         type: item.type,

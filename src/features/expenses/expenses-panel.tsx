@@ -57,7 +57,7 @@ export function ExpensesPanel() {
   const {
     expenses, setExpenses, pushHistory,
     undo, redo, canUndo, canRedo,
-    settings, currentDate,
+    settings, currentDate, selectedBranch,
     setSyncStatus, setSyncError, setLastSyncTime,
     addSyncLog,
   } = usePosStore()
@@ -69,7 +69,8 @@ export function ExpensesPanel() {
   // -- Sync logic (unchanged) --
   type ExpenseSheetRow = {
     rowId: number
-    date: string
+    branch: string
+    syncDate: string
     type: string
     description: string
     receipt: string
@@ -81,11 +82,17 @@ export function ExpensesPanel() {
   const formatForSheet = React.useCallback((): ExpenseSheetRow[] => {
     const dateStr = currentDate.toISOString().split('T')[0]
     return expenses.map((exp, index) => ({
-      rowId: index + 1, date: dateStr, type: exp.type,
-      description: exp.description, receipt: exp.receipt,
-      category: exp.category, vat: exp.vat, amount: exp.amount,
+      rowId: index + 1,
+      branch: selectedBranch ?? '',
+      syncDate: dateStr,
+      type: exp.type,
+      description: exp.description,
+      receipt: exp.receipt,
+      category: exp.category,
+      vat: exp.vat,
+      amount: exp.amount,
     }))
-  }, [expenses, currentDate])
+  }, [expenses, currentDate, selectedBranch])
 
   const syncToSheet = React.useCallback(async (overridePayload?: ExpenseSheetRow[]) => {
     const payload = overridePayload || formatForSheet()
@@ -144,7 +151,17 @@ export function ExpensesPanel() {
     }
     setExpenses((prev) => {
       const updated = editingId ? prev.map((e) => (e.id === editingId ? next : e)) : [...prev, next]
-      const payload = updated.map((exp, i) => ({ rowId: i + 1, date: currentDate.toISOString().split('T')[0], type: exp.type, description: exp.description, receipt: exp.receipt, category: exp.category, vat: exp.vat, amount: exp.amount }))
+      const payload = updated.map((exp, i) => ({
+        rowId: i + 1,
+        branch: selectedBranch ?? '',
+        syncDate: currentDate.toISOString().split('T')[0],
+        type: exp.type,
+        description: exp.description,
+        receipt: exp.receipt,
+        category: exp.category,
+        vat: exp.vat,
+        amount: exp.amount,
+      }))
       setTimeout(() => syncToSheet(payload), 0)
       return updated
     })
@@ -155,7 +172,17 @@ export function ExpensesPanel() {
     pushHistory('expenses')
     setExpenses((prev) => {
       const updated = prev.filter((item) => item.id !== id)
-      const payload = updated.map((exp, i) => ({ rowId: i + 1, date: currentDate.toISOString().split('T')[0], type: exp.type, description: exp.description, receipt: exp.receipt, category: exp.category, vat: exp.vat, amount: exp.amount }))
+      const payload = updated.map((exp, i) => ({
+        rowId: i + 1,
+        branch: selectedBranch ?? '',
+        syncDate: currentDate.toISOString().split('T')[0],
+        type: exp.type,
+        description: exp.description,
+        receipt: exp.receipt,
+        category: exp.category,
+        vat: exp.vat,
+        amount: exp.amount,
+      }))
       setTimeout(() => syncToSheet(payload), 0)
       return updated
     })
@@ -173,7 +200,22 @@ export function ExpensesPanel() {
 
   function onDrop(targetType: ExpenseType, id: string) {
     pushHistory('expenses')
-    setExpenses((prev) => prev.map((row) => (row.id === id ? { ...row, type: targetType } : row)))
+    setExpenses((prev) => {
+      const updated = prev.map((row) => (row.id === id ? { ...row, type: targetType } : row))
+      const payload = updated.map((exp, i) => ({
+        rowId: i + 1,
+        branch: selectedBranch ?? '',
+        syncDate: currentDate.toISOString().split('T')[0],
+        type: exp.type,
+        description: exp.description,
+        receipt: exp.receipt,
+        category: exp.category,
+        vat: exp.vat,
+        amount: exp.amount,
+      }))
+      setTimeout(() => syncToSheet(payload), 0)
+      return updated
+    })
   }
 
   const isDirty = draft.description.trim().length > 0

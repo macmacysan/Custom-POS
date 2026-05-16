@@ -34,6 +34,7 @@ export const SECTION_TABS: Record<NavSection, { id: PosTab; label: string }[]> =
   reports: [
     { id: 'installment', label: 'Installments' },
     { id: 'financing', label: 'Financing' },
+    { id: 'sync-debug', label: 'Sync Debug' },
   ],
 }
 
@@ -46,6 +47,7 @@ const TAB_TO_SECTION: Record<PosTab, NavSection> = {
   payments: 'sales',
   installment: 'reports',
   financing: 'reports',
+  'sync-debug': 'reports',
 }
 
 export function sectionForTab(tab: PosTab): NavSection {
@@ -74,6 +76,7 @@ export const WORKSPACE_TAB_HOTKEYS: PosTab[] = [
   'payments',
   'installment',
   'financing',
+  'sync-debug',
 ]
 
 export function workspaceTabHotkeyDigit(tab: PosTab): number | undefined {

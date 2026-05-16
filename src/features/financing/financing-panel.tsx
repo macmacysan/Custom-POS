@@ -83,7 +83,7 @@ export function FinancingPanel() {
     redo,
     canUndo,
     canRedo,
-    currentDate,
+    currentDate, selectedBranch,
     setSyncStatus,
     setSyncError,
     setLastSyncTime,
@@ -96,6 +96,7 @@ export function FinancingPanel() {
   // -- Sync logic --
   type FinancingSheetRow = {
     rowId: number
+    branch: string
     syncDate: string
     provider: string
     applicant: string
@@ -111,6 +112,7 @@ export function FinancingPanel() {
     const dateStr = currentDate.toISOString().split('T')[0]
     return financing.map((item, index) => ({
       rowId: index + 1,
+      branch: selectedBranch ?? '',
       syncDate: dateStr,
       provider: item.financeProvider,
       applicant: item.applicantName,
@@ -121,7 +123,7 @@ export function FinancingPanel() {
       status: item.status,
       dateApplied: item.dateApplied,
     }))
-  }, [financing, currentDate])
+  }, [financing, currentDate, selectedBranch])
 
   const syncToSheet = React.useCallback(async (overridePayload?: FinancingSheetRow[]) => {
     const payload = overridePayload || formatForSheet()
@@ -202,6 +204,7 @@ export function FinancingPanel() {
       const updated = editingId ? prev.map((p) => (p.id === editingId ? next : p)) : [...prev, next]
       const payload = updated.map((item, i) => ({
         rowId: i + 1,
+        branch: selectedBranch ?? '',
         syncDate: currentDate.toISOString().split('T')[0],
         provider: item.financeProvider,
         applicant: item.applicantName,
@@ -225,6 +228,7 @@ export function FinancingPanel() {
       const updated = prev.filter((p) => p.id !== id)
       const payload = updated.map((item, i) => ({
         rowId: i + 1,
+        branch: selectedBranch ?? '',
         syncDate: currentDate.toISOString().split('T')[0],
         provider: item.financeProvider,
         applicant: item.applicantName,

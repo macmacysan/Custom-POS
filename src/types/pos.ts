@@ -1,4 +1,4 @@
-export type PosTab = 'dashboard' | 'items' | 'expenses' | 'checks' | 'income' | 'payments' | 'installment' | 'financing'
+export type PosTab = 'dashboard' | 'items' | 'expenses' | 'checks' | 'income' | 'payments' | 'installment' | 'financing' | 'sync-debug'
 
 export const BRANCH_OPTIONS = ['Goa', 'Lagonoy', 'Tigaon', 'Tinambac'] as const
 export type BranchName = (typeof BRANCH_OPTIONS)[number]

@@ -44,7 +44,7 @@ export function IncomePanel() {
   const {
     income, setIncome, pushHistory,
     undo, redo, canUndo, canRedo,
-    currentDate,
+    currentDate, selectedBranch,
     setSyncStatus, setSyncError, setLastSyncTime,
     addSyncLog,
   } = usePosStore()
@@ -56,6 +56,7 @@ export function IncomePanel() {
   // -- Sync logic --
   type IncomeSheetRow = {
     rowId: number
+    branch: string
     syncDate: string
     particular: string
     remarks: string
@@ -68,6 +69,7 @@ export function IncomePanel() {
     const dateStr = currentDate.toISOString().split('T')[0]
     return income.map((item, index) => ({
       rowId: index + 1,
+      branch: selectedBranch ?? '',
       syncDate: dateStr,
       particular: item.particular,
       remarks: item.remarks,
@@ -75,7 +77,7 @@ export function IncomePanel() {
       recordDate: item.date,
       amount: item.amount,
     }))
-  }, [income, currentDate])
+  }, [income, currentDate, selectedBranch])
 
   const syncToSheet = React.useCallback(async (overridePayload?: IncomeSheetRow[]) => {
     const payload = overridePayload || formatForSheet()
@@ -134,6 +136,7 @@ export function IncomePanel() {
       const updated = editingId ? prev.map((x) => (x.id === editingId ? entry : x)) : [...prev, entry]
       const payload = updated.map((item, i) => ({
         rowId: i + 1,
+        branch: selectedBranch ?? '',
         syncDate: currentDate.toISOString().split('T')[0],
         particular: item.particular,
         remarks: item.remarks,
@@ -153,6 +156,7 @@ export function IncomePanel() {
       const updated = prev.filter((row) => row.id !== id)
       const payload = updated.map((item, i) => ({
         rowId: i + 1,
+        branch: selectedBranch ?? '',
         syncDate: currentDate.toISOString().split('T')[0],
         particular: item.particular,
         remarks: item.remarks,

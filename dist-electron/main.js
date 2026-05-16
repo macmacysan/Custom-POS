@@ -2,15 +2,17 @@ import { BrowserWindow, app, ipcMain, net } from "electron";
 import * as path from "path";
 import { fileURLToPath } from "url";
 //#region electron/main.ts
-var __filename = fileURLToPath(import.meta.url);
-var __dirname = path.dirname(__filename);
-var GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrGX0BI2TZKRn2_kUSUfTfimpsOsyPQ6kg5nBUIA_JafS80bIuJpR7p087WFKfjxcz/exec";
+process.env.NODE_ENV;
+var _dirname = typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 function createWindow() {
+	const preloadPath = path.resolve(_dirname, "preload.cjs");
+	console.log("[Main] __dirname:", _dirname);
+	console.log("[Main] Loading preload from:", preloadPath);
 	const mainWindow = new BrowserWindow({
 		width: 1200,
 		height: 800,
 		webPreferences: {
-			preload: path.join(__dirname, "preload.js"),
+			preload: preloadPath,
 			contextIsolation: true,
 			nodeIntegration: false
 		}
@@ -25,31 +27,63 @@ function createWindow() {
 	if (process.env.NODE_ENV === "development") mainWindow.webContents.openDevTools();
 }
 app.whenReady().then(() => {
+	const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrGX0BI2TZKRn2_kUSUfTfimpsOsyPQ6kg5nBUIA_JafS80bIuJpR7p087WFKfjxcz/exec";
 	createWindow();
-	async function postJsonToScript(url, payload) {
+	async function postJsonToScript(url, payload, redirectCount = 0) {
+		console.log(`[Main] Initiating request to: ${url.substring(0, 50)}...`);
+		const body = JSON.stringify(payload);
+		const MAX_REDIRECTS = 5;
 		return new Promise((resolve, reject) => {
-			const request = net.request({
-				method: "POST",
-				url,
-				headers: { "Content-Type": "application/json" }
-			});
-			request.on("response", (response) => {
-				let responseBody = "";
-				response.on("data", (chunk) => {
-					responseBody += chunk.toString();
+			try {
+				const request = net.request({
+					method: "POST",
+					url,
 				});
-				response.on("end", () => {
-					resolve({
-						status: response.statusCode ?? 0,
-						statusText: response.statusMessage ?? "",
-						body: responseBody
+				request.setHeader("Content-Type", "application/json");
+				request.on("response", (response) => {
+					if ([301, 302, 303, 307, 308].includes(response.statusCode ?? 0)) {
+						const location = response.headers.location;
+						if (!location) {
+							reject(new Error(`Redirect response without Location header (${response.statusCode})`));
+							return;
+						}
+						if (redirectCount >= MAX_REDIRECTS) {
+							reject(new Error('Too many redirects'));
+							return;
+						}
+						const nextUrl = new URL(location, url).toString();
+						response.resume();
+						postJsonToScript(nextUrl, payload, redirectCount + 1).then(resolve, reject);
+						return;
+					}
+					let responseBody = "";
+					console.log(`[Main] Received response status: ${response.statusCode}`);
+					response.on("data", (chunk) => {
+						responseBody += chunk.toString();
+					});
+					response.on("end", () => {
+						resolve({
+							status: response.statusCode ?? 0,
+							statusText: response.statusMessage ?? "",
+							body: responseBody
+						});
+					});
+					response.on("error", (err) => {
+						console.error("[Main] Response stream error:", err);
+						reject(err);
 					});
 				});
-				response.on("error", reject);
-			});
-			request.on("error", reject);
-			request.write(JSON.stringify(payload));
-			request.end();
+				request.on("error", (err) => {
+					console.error("[Main] Network/Request error:", err);
+					reject(err);
+				});
+				request.write(body);
+				request.end();
+				console.log("[Main] Request sent successfully");
+			} catch (err) {
+				console.error("[Main] Exception during request setup:", err);
+				reject(err);
+			}
 		});
 	}
 	ipcMain.handle("sync-to-gsheet", async (_event, { sheetName, data }) => {
@@ -61,7 +95,7 @@ app.whenReady().then(() => {
 			});
 			console.log(`Response status: ${response.status} ${response.statusText}`);
 			console.log(`Response body: ${response.body}`);
-			if (response.status >= 200 && response.status < 300) return {
+			if (response.status === 200 || response.status === 302) return {
 				success: true,
 				status: response.status,
 				data: response.body

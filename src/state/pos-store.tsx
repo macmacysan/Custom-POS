@@ -43,6 +43,11 @@ export type SyncLog = {
   status: SyncStatus
   message: string
   details?: any
+  trace?: {
+    step: string
+    timestamp: number
+    data?: any
+  }[]
 }
 
 type PosStoreValue = {
@@ -59,7 +64,8 @@ type PosStoreValue = {
   lastSyncTime: Date | null
   setLastSyncTime: React.Dispatch<React.SetStateAction<Date | null>>
   syncLogs: SyncLog[]
-  addSyncLog: (sheetName: string, status: SyncStatus, message: string, details?: any) => void
+  addSyncLog: (sheetName: string, status: SyncStatus, message: string, details?: any, trace?: SyncLog['trace']) => void
+  updateSyncLog: (id: string, updates: Partial<SyncLog>) => void
   clearSyncLogs: () => void
   activeTab: PosTab
   setActiveTab: (tab: PosTab) => void
@@ -126,7 +132,7 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
   const [lastSyncTime, setLastSyncTime] = React.useState<Date | null>(null)
   const [syncLogs, setSyncLogs] = React.useState<SyncLog[]>([])
   
-  const addSyncLog = React.useCallback((sheetName: string, status: SyncStatus, message: string, details?: any) => {
+  const addSyncLog = React.useCallback((sheetName: string, status: SyncStatus, message: string, details?: any, trace?: SyncLog['trace']) => {
     setSyncLogs((prev) => [
       {
         id: crypto.randomUUID(),
@@ -135,9 +141,14 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
         status,
         message,
         details,
+        trace: trace || [{ step: 'Initial', timestamp: Date.now() }],
       },
       ...prev,
-    ].slice(0, 50)) // Keep last 50 logs
+    ].slice(0, 50))
+  }, [])
+
+  const updateSyncLog = React.useCallback((id: string, updates: Partial<SyncLog>) => {
+    setSyncLogs((prev) => prev.map(log => log.id === id ? { ...log, ...updates } : log))
   }, [])
 
   const clearSyncLogs = React.useCallback(() => setSyncLogs([]), [])

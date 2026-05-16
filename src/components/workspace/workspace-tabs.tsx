@@ -8,6 +8,7 @@ import { InstallmentPanel } from '@/features/installment/installment-panel'
 import { PaymentsPanel } from '@/features/payments/payments-panel'
 import { FinancingPanel } from '@/features/financing/financing-panel'
 import { InventoryPanel } from '@/features/inventory/inventory-panel'
+import { SyncDebugPanel } from '@/features/sync-debug/sync-debug-panel'
 
 export function WorkspaceTabs() {
   const { activeTab } = usePosStore()
@@ -20,6 +21,7 @@ export function WorkspaceTabs() {
   if (activeTab === 'installment') return <InstallmentPanel />
   if (activeTab === 'financing') return <FinancingPanel />
   if (activeTab === 'items') return <InventoryPanel />
+  if (activeTab === 'sync-debug') return <SyncDebugPanel />
 
   return (
     <Card>
