@@ -28,6 +28,7 @@ export const SECTION_TABS: Record<NavSection, { id: PosTab; label: string }[]> =
   ],
   sales: [
     { id: 'dashboard', label: 'Dashboard' },
+    { id: 'schedule', label: 'Schedule' },
     { id: 'income', label: 'Income' },
     { id: 'payments', label: 'Payments' },
   ],
@@ -43,6 +44,7 @@ const TAB_TO_SECTION: Record<PosTab, NavSection> = {
   expenses: 'inventory',
   checks: 'inventory',
   dashboard: 'sales',
+  schedule: 'sales',
   income: 'sales',
   payments: 'sales',
   installment: 'reports',
@@ -72,6 +74,7 @@ export const WORKSPACE_TAB_HOTKEYS: PosTab[] = [
   'expenses',
   'checks',
   'dashboard',
+  'schedule',
   'income',
   'payments',
   'installment',

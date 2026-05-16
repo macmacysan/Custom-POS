@@ -27,10 +27,10 @@ export function SampleTransactionsTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[7rem]">Ticket</TableHead>
-            <TableHead className="w-[5rem]">Time</TableHead>
+            <TableHead className="w-28">Ticket</TableHead>
+            <TableHead className="w-20">Time</TableHead>
             <TableHead>Description</TableHead>
-            <TableHead className="w-[6rem]">Tender</TableHead>
+            <TableHead className="w-24">Tender</TableHead>
             <TableHead className="text-right">Amount</TableHead>
           </TableRow>
         </TableHeader>

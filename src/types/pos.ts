@@ -1,9 +1,18 @@
-export type PosTab = 'dashboard' | 'items' | 'expenses' | 'checks' | 'income' | 'payments' | 'installment' | 'financing' | 'sync-debug'
+export type PosTab = 'dashboard' | 'schedule' | 'items' | 'expenses' | 'checks' | 'income' | 'payments' | 'installment' | 'financing' | 'sync-debug'
 
 export const BRANCH_OPTIONS = ['Goa', 'Lagonoy', 'Tigaon', 'Tinambac'] as const
+
+export interface ScheduleTask {
+  id: string
+  title: string
+  details: string
+  startDate: string // 'yyyy-MM-dd'
+  endDate: string   // 'yyyy-MM-dd'
+  color: string     // e.g., 'bg-blue-500'
+}
 export type BranchName = (typeof BRANCH_OPTIONS)[number]
 
-export type NavSection = 'inventory' | 'sales' | 'reports'
+export type NavSection = 'sales' | 'reports'
 
 export type ExpenseType = 'Company Expenses' | 'Purchases' | 'Drawings'
 export type VatType = 'Vat' | 'Non-Vat'

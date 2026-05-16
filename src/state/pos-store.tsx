@@ -7,6 +7,7 @@ import {
   initialExpenses,
   initialIncome,
   initialInstallments,
+  initialScheduleTasks,
   initialSettings,
   initialSidebar,
   initialTab,
@@ -26,6 +27,7 @@ import type {
   NavSection,
   PaymentEntry,
   PosTab,
+  ScheduleTask,
   SidebarState,
 } from '@/types/pos'
 
@@ -91,6 +93,8 @@ type PosStoreValue = {
   setInventoryItems: React.Dispatch<React.SetStateAction<InventoryItem[]>>
   installments: InstallmentEntry[]
   setInstallments: React.Dispatch<React.SetStateAction<InstallmentEntry[]>>
+  scheduleTasks: ScheduleTask[]
+  setScheduleTasks: React.Dispatch<React.SetStateAction<ScheduleTask[]>>
   sidebar: SidebarState
   setSidebar: React.Dispatch<React.SetStateAction<SidebarState>>
   pushHistory: (key: DatasetKey, snapshot?: unknown[]) => void
@@ -123,7 +127,7 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = React.useState<AuthSessionUser | null>(() => loadSavedState('currentUser', null))
   const [selectedBranch, setSelectedBranch] = React.useState<BranchName | null>(() => loadSavedState('selectedBranch', null))
 
-  const [activeTab, setActiveTab] = React.useState<PosTab>(initialTab)
+  const [activeTab, setActiveTab] = React.useState<PosTab>(() => loadSavedState('activeTab', initialTab))
   const [currentDate, setCurrentDate] = React.useState(new Date())
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false)
 
@@ -161,6 +165,7 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
   const [financing, setFinancing] = React.useState<FinancingEntry[]>(() => loadSavedState('financing', []))
   const [inventoryItems, setInventoryItems] = React.useState<InventoryItem[]>(() => loadSavedState('inventoryItems', []))
   const [installments, setInstallments] = React.useState<InstallmentEntry[]>(() => loadSavedState('installments', initialInstallments))
+  const [scheduleTasks, setScheduleTasks] = React.useState<ScheduleTask[]>(() => loadSavedState('scheduleTasks', initialScheduleTasks))
   const [sidebar, setSidebar] = React.useState<SidebarState>(() => loadSavedState('sidebar', initialSidebar))
 
   const [history, setHistory] = React.useState<{
@@ -200,10 +205,12 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
       financing,
       inventoryItems,
       installments,
+      scheduleTasks,
       sidebar,
+      activeTab,
     }
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(toSave))
-  }, [authAccounts, currentUser, selectedBranch, settings, expenses, checks, income, payments, financing, inventoryItems, installments, sidebar])
+  }, [authAccounts, currentUser, selectedBranch, settings, expenses, checks, income, payments, financing, inventoryItems, installments, scheduleTasks, sidebar, activeTab])
 
   const createAccount = React.useCallback((username: string, password: string) => {
     const normalizedUsername = username.trim().toLowerCase()
@@ -370,6 +377,8 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
       setInventoryItems,
       installments,
       setInstallments,
+      scheduleTasks,
+      setScheduleTasks,
       sidebar,
       setSidebar,
       pushHistory,
@@ -382,6 +391,7 @@ export function PosStoreProvider({ children }: { children: React.ReactNode }) {
       updateDenomination,
       syncLogs,
       addSyncLog,
+      updateSyncLog,
       clearSyncLogs,
     }),
     [

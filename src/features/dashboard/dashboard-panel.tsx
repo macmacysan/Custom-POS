@@ -116,7 +116,7 @@ function KpiCard({
   return (
     <Card className="relative overflow-hidden">
       {/* subtle accent bar */}
-      <div className={cn("absolute inset-x-0 top-0 h-[3px]", accent ?? "bg-primary/40")} />
+      <div className={cn("absolute inset-x-0 top-0 h-0.75", accent ?? "bg-primary/40")} />
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
@@ -160,7 +160,7 @@ export function DashboardPanel() {
 
   return (
     <ScrollArea className="h-[calc(100vh-3.5rem)]">
-      <div className="p-4 md:p-5 space-y-4 md:space-y-5 max-w-[1400px] mx-auto pb-10">
+      <div className="p-4 md:p-5 space-y-4 md:space-y-5 max-w-350 mx-auto pb-10">
         <div id="primary-input" tabIndex={-1} className="sr-only" aria-hidden />
 
         {/* ── Cash Variance Banner ─────────────────────────────────── */}

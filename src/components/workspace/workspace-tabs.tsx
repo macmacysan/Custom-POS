@@ -9,11 +9,13 @@ import { PaymentsPanel } from '@/features/payments/payments-panel'
 import { FinancingPanel } from '@/features/financing/financing-panel'
 import { InventoryPanel } from '@/features/inventory/inventory-panel'
 import { SyncDebugPanel } from '@/features/sync-debug/sync-debug-panel'
+import { SchedulePanel } from '@/features/schedule/schedule-panel'
 
 export function WorkspaceTabs() {
   const { activeTab } = usePosStore()
 
   if (activeTab === 'dashboard') return <DashboardPanel />
+  if (activeTab === 'schedule') return <SchedulePanel />
   if (activeTab === 'expenses') return <ExpensesPanel />
   if (activeTab === 'checks') return <ChecksPanel />
   if (activeTab === 'income') return <IncomePanel />

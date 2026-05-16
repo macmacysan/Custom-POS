@@ -30,9 +30,6 @@ export default defineConfig({
       },
       {
         entry: 'electron/preload.ts',
-        onUpdate(args) {
-          args.reload()
-        },
         vite: {
           build: {
             rollupOptions: {

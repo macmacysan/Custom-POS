@@ -1,6 +1,6 @@
-const { app, BrowserWindow, ipcMain, net } = require('electron')
-const path = require('path')
-const { fileURLToPath } = require('url')
+import { app, BrowserWindow, ipcMain, net } from 'electron'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 const isDev = process.env.NODE_ENV === 'development'
 const _dirname = typeof __dirname !== 'undefined'
@@ -17,37 +17,32 @@ function createWindow() {
     height: 800,
     webPreferences: {
       preload: preloadPath,
-      // Ensure context isolation is enabled
       contextIsolation: true,
       nodeIntegration: false,
     },
   })
 
-  // Load from Vite dev server if running in dev mode
   if (process.env.VITE_DEV_SERVER_URL) {
     console.log('Loading from dev server:', process.env.VITE_DEV_SERVER_URL)
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
   } else {
     console.log('VITE_DEV_SERVER_URL not set, loading from file')
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
+    mainWindow.loadFile(path.join(_dirname, '../dist/index.html'))
   }
 
-  // Open DevTools in development
-  if (process.env.NODE_ENV === 'development') {
+  if (isDev) {
     mainWindow.webContents.openDevTools()
   }
 }
 
 app.whenReady().then(() => {
-  // Generic Google Apps Script URL for data synchronization
   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwrGX0BI2TZKRn2_kUSUfTfimpsOsyPQ6kg5nBUIA_JafS80bIuJpR7p087WFKfjxcz/exec'
 
   createWindow()
 
-  async function postJsonToScript(url: string, payload: unknown, redirectCount = 0) {
+  async function postJsonToScript(url: string, payload: unknown) {
     console.log(`[Main] Initiating request to: ${url.substring(0, 50)}...`)
     const body = JSON.stringify(payload)
-    const MAX_REDIRECTS = 5
     return new Promise<{ status: number; statusText: string; body: string }>((resolve, reject) => {
       try {
         const request = net.request({
@@ -93,15 +88,13 @@ app.whenReady().then(() => {
     })
   }
 
-  // Set up generic IPC handler for syncing to Google Sheets
-  ipcMain.handle('sync-to-gsheet', async (_event, { sheetName, data }) => {
+  ipcMain.handle('sync-to-gsheet', async (_event, { sheetName, data }: { sheetName: string; data: any[] }) => {
     console.log(`Syncing to Google Sheets: ${sheetName}, rows: ${data.length}`)
     try {
       const response = await postJsonToScript(GOOGLE_SCRIPT_URL, { sheetName, data })
 
       console.log(`Response status: ${response.status} ${response.statusText}`)
-      console.log(`Response body: ${response.body}`)
-
+      
       if (response.status === 200 || response.status === 302) {
         return { success: true, status: response.status, data: response.body }
       } else {
@@ -121,3 +114,4 @@ app.whenReady().then(() => {
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit()
 })
+

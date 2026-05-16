@@ -1,11 +1,19 @@
 import * as React from 'react'
-import { Activity, RefreshCcw, CheckCircle2, XCircle, AlertTriangle, Terminal, Search, Info, LayoutList } from 'lucide-react'
+import { Activity, RefreshCcw, CheckCircle2, XCircle, AlertTriangle, Terminal, Search, Info } from 'lucide-react'
 import { usePosStore } from '@/state/pos-store'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
+
+declare global {
+  interface Window {
+    electronAPI: {
+      syncToGSheet: (sheetName: string, data: any[]) => Promise<{ success: boolean; data?: any; error?: string }>
+    }
+  }
+}
 
 export function SyncDebugPanel() {
   const { 
@@ -28,7 +36,7 @@ export function SyncDebugPanel() {
     }
     
     setIsTesting(true)
-    const trace = [{ step: 'Test Initiated', timestamp: Date.now() }]
+    const trace: { step: string; timestamp: number; data?: any }[] = [{ step: 'Test Initiated', timestamp: Date.now() }]
     addSyncLog('Debug', 'syncing', 'Testing connection with ping...', null, trace)
     
     try {
@@ -63,10 +71,10 @@ export function SyncDebugPanel() {
     ]
     
     for (const sheet of sheets) {
-      const trace = [{ step: 'Manual Sync Start', timestamp: Date.now(), data: { sheet: sheet.name } }]
+      const trace: { step: string; timestamp: number; data?: any }[] = [{ step: 'Manual Sync Start', timestamp: Date.now(), data: { sheet: sheet.name } }]
       addSyncLog(sheet.name, 'syncing', `Starting full manual sync for ${sheet.name}...`, null, trace)
       try {
-        trace.push({ step: 'Formatting Payload', timestamp: Date.now() })
+        trace.push({ step: 'Formatting Payload', timestamp: Date.now(), data: {} })
         const payload = (sheet.data as any[]).map((row, i) => ({
           rowId: i + 1,
           branch: selectedBranch ?? '',

@@ -2,14 +2,11 @@ import {
   BarChart3,
   Building2,
   CalendarDays,
-  ChevronDown,
-  ChevronRight,
   CreditCard,
   Landmark,
   LayoutDashboard,
   Package,
   Receipt,
-  ChevronsUpDown,
   Store,
   Wallet,
   Boxes,
@@ -19,7 +16,6 @@ import {
   Activity,
 } from "lucide-react"
 import { ActionTooltip } from "@/components/ui/action-tooltip"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   Sidebar,
   SidebarContent,
@@ -29,6 +25,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -46,9 +43,6 @@ import {
 import { cn } from "@/lib/utils"
 import {
   SECTION_LABELS,
-  SECTION_ORDER,
-  SECTION_TABS,
-  sectionForTab,
   workspaceTabHotkeyDigit,
 } from "@/lib/nav-sections"
 import { usePosStore } from "@/state/pos-store"
@@ -56,7 +50,8 @@ import type { NavSection, PosTab } from "@/types/pos"
 import { kb } from "@/lib/keyboard-hints"
 import { dispatchOpenSettings, dispatchOpenShortcutGuide } from "@/lib/app-hotkeys"
 
-const sectionIcons: Record<NavSection, typeof Package> = {
+const sectionIcons: Record<NavSection | 'overview', typeof Package> = {
+  overview: LayoutDashboard, // Custom inserted parent section icon
   inventory: Package,
   sales: Store,
   reports: BarChart3,
@@ -64,6 +59,7 @@ const sectionIcons: Record<NavSection, typeof Package> = {
 
 const tabIcons: Record<PosTab, typeof LayoutDashboard> = {
   dashboard: LayoutDashboard,
+  schedule: CalendarDays,
   items: Boxes,
   expenses: Receipt,
   checks: Landmark,
@@ -74,11 +70,29 @@ const tabIcons: Record<PosTab, typeof LayoutDashboard> = {
   'sync-debug': Activity,
 }
 
-/* Section accent colours for left-bar indicator */
-const sectionAccent: Record<NavSection, string> = {
-  inventory: "before:bg-emerald-500",
-  sales:     "before:bg-blue-500",
-  reports:   "before:bg-violet-500",
+// Override hardcoded config order to ensure Overview/Schedule are absolutely top-pinned.
+const OVERRIDE_SECTION_ORDER: Array<NavSection | 'overview'> = ['overview', 'sales', 'reports']
+const OVERRIDE_SECTION_TABS: Record<NavSection | 'overview', { id: PosTab, label: string }[]> = {
+  overview: [
+    { id: 'dashboard', label: 'Dashboard' },
+
+  ],
+
+  sales: [
+    { id: 'expenses', label: 'Expenses' },
+    { id: 'checks', label: 'Checks' },
+    { id: 'income', label: 'Income' },
+    { id: 'payments', label: 'Payments' },
+    { id: 'installment', label: 'Installment' },
+    { id: 'financing', label: 'Financing' },
+  ],
+  reports: [
+    { id: 'sync-debug', label: 'System Logs' }
+  ]
+}
+const OVERRIDE_SECTION_LABELS: Record<NavSection | 'overview', string> = {
+  ...SECTION_LABELS,
+  overview: 'Workspace Overview'
 }
 
 export function WorkspaceNavigationSidebar({
@@ -91,16 +105,38 @@ export function WorkspaceNavigationSidebar({
   const {
     activeTab,
     setActiveTab,
-    setActiveSection,
     currentUser,
     selectedBranch,
     logout,
     syncStatus,
     syncLogs,
     clearSyncLogs,
+    inventoryItems,
+    installments,
+    expenses,
+    checks,
+    income,
+    payments,
+    financing,
+    scheduleTasks,
   } = usePosStore()
 
-  const activeSection = sectionForTab(activeTab)
+  const rowCounts: Record<PosTab, number> = {
+    dashboard: expenses.length + checks.length + income.length + payments.length,
+    items: inventoryItems.length,
+    expenses: expenses.length,
+    checks: checks.length,
+    income: income.length,
+    payments: payments.length,
+    installment: installments.length,
+    financing: financing.length,
+    schedule: scheduleTasks.length,
+    'sync-debug': syncLogs.length,
+  }
+
+  // Derive active section manually via override map
+  const activeSection = OVERRIDE_SECTION_ORDER.find(sec => OVERRIDE_SECTION_TABS[sec].some(tab => tab.id === activeTab)) || 'overview'
+
   const hour = new Date().getHours()
   const dayGreeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
 
@@ -108,7 +144,7 @@ export function WorkspaceNavigationSidebar({
     <Sidebar className={className}>
 
       {/* ── Header ── */}
-      <SidebarHeader className="border-b border-sidebar-border bg-sidebar px-3 py-3">
+      <SidebarHeader className="px-3 py-3 border-b border-sidebar-border bg-sidebar">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -140,91 +176,83 @@ export function WorkspaceNavigationSidebar({
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {SECTION_ORDER.map((section) => {
+              {OVERRIDE_SECTION_ORDER.map((section) => {
                 const SectionIcon = sectionIcons[section]
                 const isActiveSection = activeSection === section
-                const tabs = SECTION_TABS[section]
+                const tabs = OVERRIDE_SECTION_TABS[section]
 
                 return (
-                  <Collapsible
-                    key={section}
-                    asChild
-                    open={isActiveSection}
-                    onOpenChange={(next) => {
-                      if (next && !isActiveSection) setActiveSection(section)
-                    }}
-                  >
-                    <SidebarMenuItem>
+                  <SidebarMenuItem key={section}>
+                    <SidebarMenuButton
+                      tooltip={OVERRIDE_SECTION_LABELS[section]}
+                      isActive={isActiveSection}
+                      className={cn(
+                        "font-semibold text-[11px] transition-all",
+                        isActiveSection
+                          ? "text-sidebar-foreground"
+                          : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80"
+                      )}
+                      onClick={() => setActiveTab(tabs[0].id)}
+                    >
+                      <SectionIcon className={cn(
+                        "size-3.5 shrink-0 transition-opacity",
+                        isActiveSection ? "opacity-100 text-primary" : "opacity-50"
+                      )} />
+                      <span>{OVERRIDE_SECTION_LABELS[section]}</span>
+                    </SidebarMenuButton>
 
-                      {/* Section trigger */}
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton
-                          tooltip={SECTION_LABELS[section]}
-                          isActive={isActiveSection}
-                          className={cn(
-                            "font-semibold text-[11px] transition-all",
-                            isActiveSection
-                              ? "text-sidebar-foreground"
-                              : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80"
-                          )}
-                        >
-                          <SectionIcon className={cn(
-                            "size-3.5 shrink-0 transition-opacity",
-                            isActiveSection ? "opacity-100 text-primary" : "opacity-50"
-                          )} />
-                          <span>{SECTION_LABELS[section]}</span>
-                          {isActiveSection
-                            ? <ChevronDown className="ml-auto size-3 shrink-0 opacity-30" />
-                            : <ChevronRight className="ml-auto size-3 shrink-0 opacity-25" />
-                          }
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
+                    <SidebarMenuSub className="pl-2 ml-3 border-l border-sidebar-border/60">
+                      {tabs.map((item) => {
+                        const TabIcon = tabIcons[item.id]
+                        const isActive = activeTab === item.id
+                        const digit = workspaceTabHotkeyDigit(item.id)
+                        const count = rowCounts[item.id] ?? 0
 
-                      {/* Tab list */}
-                      <CollapsibleContent>
-                        <SidebarMenuSub className="ml-3 border-l border-sidebar-border/60 pl-2">
-                          {tabs.map((item) => {
-                            const TabIcon = tabIcons[item.id]
-                            const isActive = activeTab === item.id
-                            const digit = workspaceTabHotkeyDigit(item.id)
+                        return (
+                          <SidebarMenuSubItem key={item.id}>
+                            <ActionTooltip
+                              label={item.label}
+                              shortcut={digit !== undefined ? kb.workspaceTab(digit) : undefined}
+                            >
+                              <SidebarMenuSubButton
+                                isActive={isActive}
+                                onMouseEnter={() => {
+                                  // Auto-select on hover
+                                  if (!isActive) {
+                                    setActiveTab(item.id)
+                                    onTabSelect?.()
+                                  }
+                                }}
+                                onClick={() => {
+                                  setActiveTab(item.id)
+                                  onTabSelect?.()
+                                }}
+                                className={cn(
+                                  "text-[11px] font-medium rounded transition-all cursor-default",
+                                  isActive
+                                    ? "text-sidebar-foreground bg-sidebar-accent"
+                                    : "text-sidebar-foreground/45 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50"
+                                )}
+                              >
+                                <TabIcon className={cn(
+                                  "size-3 shrink-0",
+                                  isActive ? "text-primary opacity-100" : "opacity-40"
+                                )} />
+                                <span>{item.label}</span>
 
-                            return (
-                              <SidebarMenuSubItem key={item.id}>
-                                <ActionTooltip
-                                  label={item.label}
-                                  shortcut={digit !== undefined ? kb.workspaceTab(digit) : undefined}
-                                >
-                                  <SidebarMenuSubButton
-                                    isActive={isActive}
-                                    onClick={() => {
-                                      setActiveTab(item.id)
-                                      onTabSelect?.()
-                                    }}
-                                    className={cn(
-                                      "text-[11px] font-medium rounded transition-all",
-                                      isActive
-                                        ? "text-sidebar-foreground bg-sidebar-accent"
-                                        : "text-sidebar-foreground/45 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50"
-                                    )}
-                                  >
-                                    <TabIcon className={cn(
-                                      "size-3 shrink-0",
-                                      isActive ? "text-primary opacity-100" : "opacity-40"
-                                    )} />
-                                    <span>{item.label}</span>
-                                    {isActive && (
-                                      <span className="ml-auto size-1 rounded-full bg-primary shrink-0" />
-                                    )}
-                                  </SidebarMenuSubButton>
-                                </ActionTooltip>
-                              </SidebarMenuSubItem>
-                            )
-                          })}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-
-                    </SidebarMenuItem>
-                  </Collapsible>
+                                {/* Zero-omitted subtle count badge */}
+                                {count > 0 && (
+                                  <SidebarMenuBadge className="ml-auto text-[9px] font-semibold opacity-60 px-1 py-0 bg-transparent text-sidebar-foreground shadow-none">
+                                    {count}
+                                  </SidebarMenuBadge>
+                                )}
+                              </SidebarMenuSubButton>
+                            </ActionTooltip>
+                          </SidebarMenuSubItem>
+                        )
+                      })}
+                    </SidebarMenuSub>
+                  </SidebarMenuItem>
                 )
               })}
             </SidebarMenu>
@@ -233,19 +261,19 @@ export function WorkspaceNavigationSidebar({
       </SidebarContent>
 
       {/* ── Sync Debug Logs (Temp) ── */}
-      <div className="mt-auto px-3 py-4 border-t border-sidebar-border/30 bg-sidebar-accent/5">
+      <div className="px-3 py-4 mt-auto border-t border-sidebar-border/30 bg-sidebar-accent/5">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-sidebar-foreground/30">
             Sync Debug
           </span>
           <div className="flex items-center gap-2">
-            <button 
+            <button
               onClick={() => setActiveTab('sync-debug')}
               className="text-[9px] text-primary hover:underline font-semibold"
             >
               Open Diagnostics
             </button>
-            <button 
+            <button
               onClick={clearSyncLogs}
               className="text-[9px] text-sidebar-foreground/40 hover:text-primary transition-colors font-semibold"
             >
@@ -253,7 +281,7 @@ export function WorkspaceNavigationSidebar({
             </button>
           </div>
         </div>
-        <div className="space-y-2.5 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+        <div className="space-y-2.5 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
           {syncLogs.length === 0 ? (
             <p className="text-[9px] text-sidebar-foreground/20 italic text-center py-4">
               Waiting for activity...
@@ -265,8 +293,8 @@ export function WorkspaceNavigationSidebar({
                   <span className={cn(
                     "font-bold uppercase tracking-tight",
                     log.status === 'success' ? 'text-emerald-500' :
-                    log.status === 'error' ? 'text-red-500' :
-                    'text-blue-400'
+                      log.status === 'error' ? 'text-red-500' :
+                        'text-blue-400'
                   )}>
                     {log.sheetName}
                   </span>
@@ -274,7 +302,7 @@ export function WorkspaceNavigationSidebar({
                     {log.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                 </div>
-                <p className="text-sidebar-foreground/60 leading-tight">
+                <p className="leading-tight text-sidebar-foreground/60">
                   {log.message}
                 </p>
                 {log.details?.error && (
@@ -289,7 +317,7 @@ export function WorkspaceNavigationSidebar({
       </div>
 
       {/* ── Footer ── */}
-      <SidebarFooter className="border-t border-sidebar-border bg-sidebar px-2 py-2">
+      <SidebarFooter className="px-2 py-2 border-t border-sidebar-border bg-sidebar">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
@@ -315,11 +343,11 @@ export function WorkspaceNavigationSidebar({
                   {/* Sync status dot */}
                   <span className={cn(
                     "size-1.5 shrink-0 rounded-full transition-all",
-                    syncStatus === 'success'  ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]' :
-                    syncStatus === 'syncing'  ? 'bg-blue-400 animate-pulse' :
-                    syncStatus === 'error'    ? 'bg-red-500' :
-                    syncStatus === 'offline'  ? 'bg-amber-400' :
-                    'bg-sidebar-foreground/20'
+                    syncStatus === 'success' ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]' :
+                      syncStatus === 'syncing' ? 'bg-blue-400 animate-pulse' :
+                        syncStatus === 'error' ? 'bg-red-500' :
+                          syncStatus === 'offline' ? 'bg-amber-400' :
+                            'bg-sidebar-foreground/20'
                   )} />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
@@ -348,7 +376,7 @@ export function WorkspaceNavigationSidebar({
                   <span className="text-xs font-medium">System Preferences</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout} className="gap-2 py-2 text-destructive cursor-pointer focus:text-destructive">
+                <DropdownMenuItem onClick={logout} className="gap-2 py-2 cursor-pointer text-destructive focus:text-destructive">
                   <LogOut className="size-4" />
                   <span className="text-xs font-semibold">Sign Out</span>
                 </DropdownMenuItem>

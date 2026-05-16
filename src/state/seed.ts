@@ -5,6 +5,7 @@
   IncomeEntry,
   InstallmentEntry,
   PosTab,
+  ScheduleTask,
   SidebarState,
 } from '@/types/pos'
 
@@ -92,6 +93,8 @@ export const initialIncome: IncomeEntry[] = [
 export const initialInstallments: InstallmentEntry[] = [
   { id: 'inst1', branch: 'GOA', lname: 'Dela Cruz', fname: 'Juan', mname: 'P', suffix: 'NONE', street: 'Zone 1', brgy: 'San Jose', city: 'GOA', prov: 'CAMARINES SUR', occ: 'Teacher', contact: '09123456789', agent: 'Mike R.', ref: 'Sarah T.', added: '2026-04-23' },
 ]
+
+export const initialScheduleTasks: ScheduleTask[] = []
 
 export const initialTab: PosTab = 'expenses'
 
