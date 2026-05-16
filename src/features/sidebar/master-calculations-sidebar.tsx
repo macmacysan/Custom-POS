@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -31,7 +30,7 @@ function TooltipItemList({ items }: { items: HoverItem[] }) {
   const total = items.reduce((sum, item) => sum + item.amount, 0)
 
   return (
-    <div className="w-full space-y-2 border border-border">
+    <div className="w-full space-y-2">
       <div className="flex items-center justify-between pb-1.5 border-b">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           Breakdown
@@ -104,31 +103,6 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
   const [denomOpen, setDenomOpen] = React.useState(false)
   const totals = calculateMasterTotals(sidebar, expenses, checks, income, payments)
 
-  // Optional receipt rows — auto-show if they already have data
-  const [showSiTrading, setShowSiTrading] = React.useState(
-    () => (sidebar.siTradingQty ?? 0) > 0 || (sidebar.siTrading ?? 0) > 0
-  )
-  const [showDeliveryReceipt, setShowDeliveryReceipt] = React.useState(
-    () => (sidebar.deliveryReceiptQty ?? 0) > 0 || (sidebar.deliveryReceipt ?? 0) > 0
-  )
-  const [showBobsPawnshop, setShowBobsPawnshop] = React.useState(
-    () => (sidebar.bobsPawnshopQty ?? 0) > 0 || (sidebar.bobsPawnshop ?? 0) > 0
-  )
-
-  function toggleRow(
-    show: boolean,
-    setter: (v: boolean) => void,
-    qtyField: Parameters<typeof updateSidebarField>[0] | null,
-    amtField: Parameters<typeof updateSidebarField>[0],
-  ) {
-    if (!show) {
-      // clearing values when hiding
-      if (qtyField) updateSidebarField(qtyField, 0)
-      updateSidebarField(amtField, 0)
-    }
-    setter(!show)
-  }
-
   return (
     <TooltipProvider delayDuration={150} skipDelayDuration={100}>
       <aside
@@ -167,71 +141,10 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
                   <span className="text-right">Amount</span>
                 </div>
 
-                <ReceiptInput label="Sales Invoice" qty={sidebar.salesInvoiceQty} onQtyChange={(v) => updateSidebarField('salesInvoiceQty', v)} amount={sidebar.salesInvoice} onAmountChange={(v) => updateSidebarField('salesInvoice', v)} />
-
-                {/* Optional row toggle buttons */}
-                {(!showSiTrading || !showDeliveryReceipt || !showBobsPawnshop) && (
-                  <div className="flex flex-wrap gap-1 px-2 pt-1.5">
-                    {!showSiTrading && (
-                      <button
-                        type="button"
-                        onClick={() => toggleRow(showSiTrading, setShowSiTrading, 'siTradingQty', 'siTrading')}
-                        className="inline-flex items-center gap-0.5 rounded-full border border-dashed border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
-                      >
-                        <Plus className="size-2.5" />SI - Trading
-                      </button>
-                    )}
-                    {!showDeliveryReceipt && (
-                      <button
-                        type="button"
-                        onClick={() => toggleRow(showDeliveryReceipt, setShowDeliveryReceipt, 'deliveryReceiptQty', 'deliveryReceipt')}
-                        className="inline-flex items-center gap-0.5 rounded-full border border-dashed border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
-                      >
-                        <Plus className="size-2.5" />Delivery Receipt
-                      </button>
-                    )}
-                    {!showBobsPawnshop && (
-                      <button
-                        type="button"
-                        onClick={() => toggleRow(showBobsPawnshop, setShowBobsPawnshop, 'bobsPawnshopQty', 'bobsPawnshop')}
-                        className="inline-flex items-center gap-0.5 rounded-full border border-dashed border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
-                      >
-                        <Plus className="size-2.5" />Bobs Pawnshop
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {showSiTrading && (
-                  <ReceiptInput
-                    label="SI - Trading"
-                    qty={sidebar.siTradingQty}
-                    onQtyChange={(v) => updateSidebarField('siTradingQty', v)}
-                    amount={sidebar.siTrading}
-                    onAmountChange={(v) => updateSidebarField('siTrading', v)}
-                    onRemove={() => toggleRow(showSiTrading, setShowSiTrading, 'siTradingQty', 'siTrading')}
-                  />
-                )}
-                {showDeliveryReceipt && (
-                  <ReceiptInput
-                    label="Delivery Receipt"
-                    qty={sidebar.deliveryReceiptQty}
-                    onQtyChange={(v) => updateSidebarField('deliveryReceiptQty', v)}
-                    amount={sidebar.deliveryReceipt}
-                    onAmountChange={(v) => updateSidebarField('deliveryReceipt', v)}
-                    onRemove={() => toggleRow(showDeliveryReceipt, setShowDeliveryReceipt, 'deliveryReceiptQty', 'deliveryReceipt')}
-                  />
-                )}
-                {showBobsPawnshop && (
-                  <ReceiptInput
-                    label="Bobs Pawnshop"
-                    qty={sidebar.bobsPawnshopQty}
-                    onQtyChange={(v) => updateSidebarField('bobsPawnshopQty', v)}
-                    amount={sidebar.bobsPawnshop}
-                    onAmountChange={(v) => updateSidebarField('bobsPawnshop', v)}
-                    onRemove={() => toggleRow(showBobsPawnshop, setShowBobsPawnshop, 'bobsPawnshopQty', 'bobsPawnshop')}
-                  />
-                )}
+                <ReceiptInput label="Sales Invoice"    qty={sidebar.salesInvoiceQty}   onQtyChange={(v) => updateSidebarField('salesInvoiceQty', v)}   amount={sidebar.salesInvoice}    onAmountChange={(v) => updateSidebarField('salesInvoice', v)} />
+                <ReceiptInput label="SI - Trading"     qty={sidebar.siTradingQty}      onQtyChange={(v) => updateSidebarField('siTradingQty', v)}      amount={sidebar.siTrading}       onAmountChange={(v) => updateSidebarField('siTrading', v)} />
+                <ReceiptInput label="Delivery Receipt" qty={sidebar.deliveryReceiptQty} onQtyChange={(v) => updateSidebarField('deliveryReceiptQty', v)} amount={sidebar.deliveryReceipt} onAmountChange={(v) => updateSidebarField('deliveryReceipt', v)} />
+                <ReceiptInput label="Bobs Pawnshop"    qty={sidebar.bobsPawnshopQty}   onQtyChange={(v) => updateSidebarField('bobsPawnshopQty', v)}   amount={sidebar.bobsPawnshop}    onAmountChange={(v) => updateSidebarField('bobsPawnshop', v)} />
               </div>
 
               <div className="pt-1.5">
@@ -261,9 +174,9 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
               <SectionHeader>Cash Outflows</SectionHeader>
 
               <div className="space-y-0.5">
-                {hasDisplayAmount(totals.expenseTotals.company)   && <StaticRow label="Cash Expenses"  value={totals.expenseTotals.company}   hoverItems={totals.cashExpensesList} />}
-                {hasDisplayAmount(totals.expenseTotals.drawings)  && <StaticRow label="Drawings"        value={totals.expenseTotals.drawings}  hoverItems={totals.drawingsList} />}
-                {hasDisplayAmount(totals.expenseTotals.purchases) && <StaticRow label="Cash Purchases"  value={totals.expenseTotals.purchases} hoverItems={totals.cashPurchasesList} />}
+                <StaticRow label="Cash Expenses"      value={totals.expenseTotals.company}   hoverItems={totals.cashExpensesList} />
+                <StaticRow label="Drawings"           value={totals.expenseTotals.drawings}  hoverItems={totals.drawingsList} />
+                <StaticRow label="Cash Purchases"     value={totals.expenseTotals.purchases} hoverItems={totals.cashPurchasesList} />
                 <InteractiveRow label="Monthly Deductions" value={totals.deductionsTotal} onClick={() => setDeductionsOpen(true)} hoverItems={totals.deductionsList} />
               </div>
 
@@ -278,10 +191,10 @@ export function MasterCalculationsSidebar({ embeddedInSheet = false }: { embedde
 
               <div className="space-y-0.5">
                 <InteractiveRow label="Cash on Hand" value={totals.cashAmount} onClick={() => setDenomOpen(true)} hoverItems={totals.cashAmountList} />
-                {hasDisplayAmount(totals.checkTotals.check) && <StaticRow label="Bank Check" value={totals.checkTotals.check} hoverItems={totals.bankCheckList} />}
-                {hasDisplayAmount(totals.checkTotals.transfer) && <StaticRow label="Bank Transfer" value={totals.checkTotals.transfer} hoverItems={totals.bankTransferList} />}
-                {hasDisplayAmount(totals.checkTotals.gcash) && <StaticRow label="GCash" value={totals.checkTotals.gcash} hoverItems={totals.gcashList} />}
-                {hasDisplayAmount(totals.checkTotals.ewallet) && <StaticRow label="Other E-Wallet" value={totals.checkTotals.ewallet} hoverItems={totals.otherEWalletList} />}
+                {hasDisplayAmount(totals.checkTotals.check)    && <StaticRow label="Bank Check"     value={totals.checkTotals.check}    hoverItems={totals.bankCheckList} />}
+                {hasDisplayAmount(totals.checkTotals.transfer) && <StaticRow label="Bank Transfer"  value={totals.checkTotals.transfer} hoverItems={totals.bankTransferList} />}
+                {hasDisplayAmount(totals.checkTotals.gcash)    && <StaticRow label="GCash"          value={totals.checkTotals.gcash}    hoverItems={totals.gcashList} />}
+                {hasDisplayAmount(totals.checkTotals.ewallet)  && <StaticRow label="Other E-Wallet" value={totals.checkTotals.ewallet}  hoverItems={totals.otherEWalletList} />}
               </div>
 
               <div className="pt-1.5">
@@ -418,7 +331,7 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
 }
 
 function ReceiptInput({
-  label, qty, onQtyChange, amount, onAmountChange, hideQty, onRemove,
+  label, qty, onQtyChange, amount, onAmountChange, hideQty,
 }: {
   label: string
   qty?: number
@@ -426,22 +339,11 @@ function ReceiptInput({
   amount: number
   onAmountChange: (next: number) => void
   hideQty?: boolean
-  onRemove?: () => void
 }) {
   return (
     <label className="grid grid-cols-[1fr_32px_80px] items-center gap-1.5 px-2 py-1 rounded-md transition-colors hover:bg-muted/50 cursor-text focus-within:bg-muted/50">
-      <span className="flex items-center gap-1 min-w-0">
-        <span className="text-[11px] font-medium text-foreground/80 truncate">{label}</span>
-        {onRemove && (
-          <button
-            type="button"
-            onMouseDown={(e) => { e.preventDefault(); onRemove() }}
-            className="shrink-0 rounded-full p-0.5 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
-            aria-label={`Remove ${label}`}
-          >
-            <X className="size-2.5" />
-          </button>
-        )}
+      <span className="text-[11px] font-medium text-foreground/80 truncate">
+        {label}
       </span>
       <div className="w-full">
         {!hideQty && onQtyChange && (
